@@ -1,0 +1,6 @@
+# Fine-Tuning Dependencies (GPU-only)
+# Install with: pip install -r requirements-finetune.txt
+peft>=0.7.0
+trl>=0.7.0
+accelerate>=0.25.0
+bitsandbytes>=0.41.0

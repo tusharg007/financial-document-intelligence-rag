@@ -1,0 +1,5 @@
+{
+  "status": "not_trained",
+  "message": "LoRA not trained yet; adapters/lora_findoc is missing.",
+  "models_compared": []
+}

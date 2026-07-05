@@ -1,0 +1,20 @@
+# Implementation Plan
+
+| Missing feature | Files to create/modify | Acceptance criteria | Test command | Expected output |
+|---|---|---|---|---|
+| Honest audit and reports | `reports/gap_audit.md`, `reports/implementation_plan.md` | Reports cite current files and distinguish demo data from real pipelines. | `Test-Path reports/gap_audit.md` | `True` |
+| Required data folders | `data/raw/*`, `data/processed`, `data/indexes`, `reports` | All required directories exist locally. | `Get-ChildItem data/raw` | SEC/Kaggle/dataset folders listed. |
+| SEC ingestion | `src/data/sec_edgar_ingestion.py`, `scripts/ingest_sec.py` | Downloads filings with SEC User-Agent, writes raw filings and manifest CSV/Parquet when dependencies allow. | `python scripts/ingest_sec.py --tickers AAPL --forms 10-K --start-year 2024 --end-year 2024 --limit-per-company 1` | Manifest written or clear network/User-Agent error. |
+| XBRL extraction | `src/data/xbrl_extractor.py` | Extracts standardized facts from SEC companyfacts API or local JSON. | `python -m src.data.xbrl_extractor --help` | CLI help or import success. |
+| SEC parsing and chunking | `src/data/sec_parser.py`, `src/data/chunking.py` | Section-aware chunks preserve metadata and write parquet/jsonl. | `python scripts/build_dataset_card.py` | Dataset card reports chunks or zero with clear status. |
+| Dataset loaders | `src/data/dataset_loaders.py`, `scripts/prepare_datasets.py` | Load local/HF datasets when available; fail with download instructions when unavailable. | `python scripts/prepare_datasets.py --demo-ok` | Demo eval files generated only from demo mode. |
+| Real indexing | `src/indexing/build_indexes.py`, `scripts/build_indexes.py` | Dense Chroma and persisted BM25 under `data/indexes/bm25` from processed chunks. | `python -m src.indexing.build_indexes --chunks data/processed/chunks.jsonl --skip-dense` | BM25 persisted. |
+| Hybrid retrieval controls | `src/retrieval/hybrid_retriever.py`, `src/retrieval/reranker.py`, `src/retrieval/query_router.py`, `src/retrieval/confidence.py` | `top_k`, filters, reranking, and multi-query flags affect results. | `python -m pytest tests/test_retrieval.py` | Tests pass. |
+| LangGraph RAG | `src/agents/langgraph_rag.py`, `src/agents/rag_agent.py` | Uses `StateGraph` with required nodes, conditional routing, trace output, refusal behavior. | `python -m pytest tests/test_langgraph_agent.py` | Tests pass. |
+| LLM providers | `src/llm/*`, `.env.example` | Groq/HF/LoRA health checks are explicit; extractive fallback is labeled. | `python -m pytest tests/test_llm_providers.py` | Tests pass. |
+| LoRA pipeline | `src/finetuning/build_lora_dataset.py`, `src/finetuning/train_lora.py`, `src/finetuning/evaluate_lora.py` | Builds real examples from available processed datasets; no fake metrics if unavailable. | `python -m pytest tests/test_lora_dataset.py` | Tests pass. |
+| Evaluation suite | `src/evaluation/retrieval_eval.py`, `src/evaluation/rag_eval.py`, `scripts/evaluate.py` | Generates actual JSON/MD/CSV/JSONL reports from eval files. | `python scripts/evaluate.py --eval-set demo --retriever hybrid_rerank --llm extractive --output reports/evaluation_latest.json` | Evaluation report files created. |
+| FastAPI backend | `api.py` | Required endpoints exist; `/query` uses request fields and returns citations/confidence/trace/latency/provider. | `python -m pytest tests/test_api.py` | Tests pass. |
+| Streamlit honesty | `app.py` | UI metrics load only from report files; LoRA shows not trained unless report exists. | Manual Streamlit run | No hardcoded benchmark claims shown. |
+| Deployment | `Dockerfile`, `docker-compose.yml`, `Makefile`, `pyproject.toml`, `.github/workflows/ci.yml`, `.pre-commit-config.yaml`, `README_DEPLOYMENT.md` | Local install/test/run commands documented and CI smoke tests configured. | `make test` | Pytest runs where Python is available. |
+| Final docs | `README.md`, `reports/resume_bullets.md`, `reports/final_implementation_summary.md` | README is honest and resume bullets only claim implemented features. | `Test-Path reports/final_implementation_summary.md` | `True` |
