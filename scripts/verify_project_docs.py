@@ -28,6 +28,7 @@ BANNED_TERMS = [
 
 REQUIRED_README_SNIPPETS = [
     "Financial Document Intelligence RAG",
+    "https://financial-document-intelligence-rag-heq3wynx8iusxe5caw32fr.streamlit.app/",
     "keyword_hit_rate",
     "citation_coverage",
     "source_url_coverage",
@@ -36,7 +37,7 @@ REQUIRED_README_SNIPPETS = [
     "pip install -r requirements.txt",
     "python scripts/run_evaluation.py",
     "python scripts/verify_evaluation.py",
-    "python -m pytest -q --basetemp=.pytest-tmp-project-polish",
+    "python -m pytest -q --basetemp=.pytest-tmp-readme-final",
 ]
 
 
@@ -56,6 +57,18 @@ def main() -> None:
     for snippet in REQUIRED_README_SNIPPETS:
         if snippet not in readme_text:
             failures.append(f"README is missing required content: {snippet}")
+
+    if "Live demo" not in readme_text and "Deployment Notes" not in readme_text and "Live Demo" not in readme_text:
+        failures.append("README is missing a visible live-demo or deployment-notes section.")
+
+    required_exclusion_phrases = [
+        "intentionally excluded",
+        "Chroma dense index",
+        "BM25 sparse index",
+    ]
+    for phrase in required_exclusion_phrases:
+        if phrase not in readme_text:
+            failures.append(f"README is missing deployment/exclusion note: {phrase}")
 
     lowered = readme_text.lower()
     banned_hits = []
@@ -77,6 +90,9 @@ def main() -> None:
         ]),
         "readme_mentions_setup_commands": "python -m venv .venv" in readme_text and "pip install -r requirements.txt" in readme_text,
         "readme_mentions_evaluation_commands": "python scripts/run_evaluation.py" in readme_text and "python scripts/verify_evaluation.py" in readme_text,
+        "readme_mentions_live_link": "https://financial-document-intelligence-rag-heq3wynx8iusxe5caw32fr.streamlit.app/" in readme_text,
+        "readme_mentions_demo_scope": ("Live demo" in readme_text or "Live Demo" in readme_text or "Deployment Notes" in readme_text),
+        "readme_mentions_excluded_indexes": "intentionally excluded" in readme_text and "Chroma dense index" in readme_text and "BM25 sparse index" in readme_text,
         "readme_banned_terms_found": banned_hits,
         "failures": failures,
     }
