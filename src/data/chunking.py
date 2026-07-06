@@ -55,6 +55,8 @@ def chunk_sections(
         if section.get("table_id"):
             base_meta["table_id"] = section["table_id"]
         for idx, text in enumerate(split_text(section.get("text", ""), chunk_size, chunk_overlap)):
+            if len(text.strip()) < 100:
+                continue
             record = {
                 "doc_id": generate_doc_id(text, {**base_meta, "chunk_index": idx}),
                 "content": text,

@@ -5,7 +5,8 @@ Takes candidate documents from hybrid retrieval and reranks them
 using a fine-grained cross-encoder model for precise relevance scoring.
 """
 import time
-from typing import List, Dict, Any, Optional
+import os
+from typing import Callable, List, Dict, Any, Optional
 
 from src.utils.logger import get_logger
 from config.settings import settings
@@ -26,14 +27,31 @@ class CrossEncoderReranker:
     This model is trained on the MS MARCO passage ranking dataset.
     """
 
-    def __init__(self, model_name: str = None):
+    def __init__(
+        self,
+        model_name: str = None,
+        scoring_fn: Optional[Callable[[str, str], float]] = None,
+    ):
         self.model_name = model_name or settings.reranker_model_id
+        self.scoring_fn = scoring_fn
         self._model = None
         self.available = True
 
     @property
     def model(self):
         """Lazy-load the cross-encoder model."""
+        if self.scoring_fn is not None:
+            return None
+        if self._model is False:
+            return None
+        if os.getenv("DISABLE_RERANKER_MODEL_LOADING", "").lower() in {"1", "true", "yes"}:
+            self.available = False
+            self._model = False
+            return None
+        if os.getenv("RERANKER_MODE", "").lower() in {"fallback", "lexical", "disabled"}:
+            self.available = False
+            self._model = False
+            return None
         if self._model is None:
             logger.info(f"Loading reranker model: {self.model_name}")
             start = time.time()
@@ -44,6 +62,7 @@ class CrossEncoderReranker:
                 logger.info(f"Reranker loaded in {elapsed:.2f}s")
             except Exception as e:
                 self.available = False
+                self._model = False
                 logger.warning(f"Reranker unavailable ({e}); using lexical fallback.")
         return self._model
 
@@ -107,6 +126,8 @@ class CrossEncoderReranker:
         return float(model.predict([[query, document]])[0])
 
     def _lexical_score(self, query: str, document: str) -> float:
+        if self.scoring_fn is not None:
+            return float(self.scoring_fn(query, document))
         q_terms = {t.lower() for t in query.split() if len(t) > 2}
         d = document.lower()
         return float(sum(1 for t in q_terms if t in d)) / max(len(q_terms), 1)

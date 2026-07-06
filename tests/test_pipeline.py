@@ -328,7 +328,11 @@ class TestReranker:
         """Test that reranker changes document ordering."""
         from src.retrieval.reranker import CrossEncoderReranker
         
-        reranker = CrossEncoderReranker()
+        def fake_score(query, document):
+            query_terms = {t.lower() for t in query.split()}
+            return sum(1 for term in query_terms if term in document.lower())
+
+        reranker = CrossEncoderReranker(scoring_fn=fake_score)
         
         docs = [
             {"doc_id": "1", "content": "The weather is nice today", "rrf_score": 0.9},

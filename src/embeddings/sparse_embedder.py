@@ -105,6 +105,31 @@ class SparseEmbedder:
         
         return filtered
 
+    def _metadata_matches(self, doc: Dict[str, Any], filters: Optional[Dict[str, Any]]) -> bool:
+        """Return True when a document satisfies simple equality metadata filters."""
+        if not filters:
+            return True
+        metadata = doc.get("metadata", {}) if isinstance(doc.get("metadata"), dict) else {}
+        for key, value in filters.items():
+            if value in ("", None, [], {}):
+                continue
+            actual = doc.get(key, metadata.get(key, ""))
+            if str(actual).lower() != str(value).lower():
+                return False
+        return True
+
+    @staticmethod
+    def _lexical_overlap_score(query_tokens: List[str], doc_tokens: List[str]) -> float:
+        """Positive deterministic fallback score for tiny corpora with zero BM25 IDF."""
+        if not query_tokens or not doc_tokens:
+            return 0.0
+        query_set = set(query_tokens)
+        doc_set = set(doc_tokens)
+        overlap = len(query_set & doc_set)
+        if overlap == 0:
+            return 0.0
+        return overlap / len(query_set)
+
     def build_index(self, documents: List[Dict[str, Any]]) -> int:
         """
         Build BM25 index from documents.
@@ -174,23 +199,32 @@ class SparseEmbedder:
         
         results = []
         for idx in top_indices:
-            if scores[idx] > 0:  # Only include positive scores
+            lexical_score = self._lexical_overlap_score(
+                tokenized_query,
+                self.tokenized_corpus[idx] if idx < len(self.tokenized_corpus) else []
+            )
+            final_score = float(scores[idx]) if scores[idx] > 0 else lexical_score
+            if final_score > 0:
                 doc = self.documents[idx].copy()
-                if filters and any(
-                    str(doc.get(k, "")).lower() != str(v).lower()
-                    for k, v in filters.items()
-                    if v not in ("", None, [], {})
-                ):
+                if not self._metadata_matches(doc, filters):
                     continue
+                metadata = {
+                    k: v for k, v in doc.items()
+                    if k not in ("content", "doc_id")
+                    and isinstance(v, (str, int, float, bool))
+                }
+                if isinstance(doc.get("metadata"), dict):
+                    metadata.update({
+                        k: v for k, v in doc["metadata"].items()
+                        if isinstance(v, (str, int, float, bool))
+                    })
                 results.append({
                     "doc_id": doc.get("doc_id", f"doc_{idx}"),
                     "content": doc["content"],
-                    "metadata": {
-                        k: v for k, v in doc.items()
-                        if k not in ("content", "doc_id")
-                        and isinstance(v, (str, int, float, bool))
-                    },
-                    "score": float(scores[idx]),
+                    "metadata": metadata,
+                    "score": final_score,
+                    "bm25_score": float(scores[idx]),
+                    "lexical_overlap_score": lexical_score,
                     "retrieval_type": "sparse"
                 })
                 if len(results) >= top_k:

@@ -17,11 +17,29 @@ venv/
 .venv/
 env/
 
-# Data (too large for git)
+# Data (too large/generated for git)
 data/raw/
+data/indexes/
 data/vectorstore/
+data/jobs/
+data/processed/
 data/processed/*.pkl
+data/processed/*.parquet
+data/processed/*.jsonl
 *.pkl
+
+# Local temp/testing folders
+.tmp/
+.pytest_cache/
+htmlcov/
+.coverage
+
+# Installer files accidentally downloaded into project
+python-*.exe
+
+# Models/adapters/downloaded artifacts
+models/
+adapters/
 
 # IDE
 .vscode/
@@ -37,13 +55,5 @@ Thumbs.db
 logs/
 *.log
 
-# Models (downloaded at runtime)
-models/
-
 # Jupyter
 .ipynb_checkpoints/
-
-# Testing
-.pytest_cache/
-htmlcov/
-.coverage

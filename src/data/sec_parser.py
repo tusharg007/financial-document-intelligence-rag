@@ -15,6 +15,9 @@ except Exception:
 SECTION_MARKERS = [
     ("Business", r"item\s+1[\.\s-]+business"),
     ("Risk Factors", r"item\s+1a[\.\s-]+risk\s+factors"),
+    ("Financial Statements", r"item\s+1[\.\s-]+financial\s+statements"),
+    ("MD&A", r"item\s+2[\.\s-]+management.?s\s+discussion"),
+    ("Quantitative and Qualitative Disclosures", r"item\s+3[\.\s-]+quantitative\s+and\s+qualitative"),
     ("MD&A", r"item\s+7[\.\s-]+management.?s\s+discussion"),
     ("Quantitative and Qualitative Disclosures", r"item\s+7a[\.\s-]+quantitative\s+and\s+qualitative"),
     ("Financial Statements", r"item\s+8[\.\s-]+financial\s+statements"),
@@ -66,11 +69,11 @@ def extract_sections(text: str, metadata: Dict[str, Any]) -> List[Dict[str, Any]
             matches.append((match.start(), name))
     matches.sort()
     if not matches:
-        return [{**metadata, "section": "Full Document", "text": text[:100000]}]
+        return [{**metadata, "section": "Full Document", "text": text}]
 
     sections: List[Dict[str, Any]] = []
     for idx, (start, name) in enumerate(matches):
-        end = matches[idx + 1][0] if idx + 1 < len(matches) else min(len(text), start + 120000)
+        end = matches[idx + 1][0] if idx + 1 < len(matches) else len(text)
         section_text = clean_boilerplate(text[start:end])
         if section_text:
             sections.append({**metadata, "section": name, "text": section_text})
