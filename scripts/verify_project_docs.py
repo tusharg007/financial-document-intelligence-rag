@@ -39,8 +39,10 @@ REQUIRED_README_SNIPPETS = [
     "pip install -r requirements.txt",
     "python scripts/run_evaluation.py",
     "python scripts/verify_evaluation.py",
-    "python -m pytest -q --basetemp=.pytest-tmp-readme-final",
+    "python -m pytest -q --basetemp=.pytest-tmp-readme-rag-eval-final",
     "rag_eval_kit",
+    "Cookbooks",
+    "observability",
 ]
 
 
