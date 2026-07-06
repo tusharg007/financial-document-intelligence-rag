@@ -58,24 +58,32 @@ class LangGraphRAG:
         if StateGraph is None:
             return None
         graph = StateGraph(FinancialRAGState)
-        graph.add_node("classify_query", self.classify_query)
-        graph.add_node("build_filters", self.build_filters)
-        graph.add_node("retrieve_documents", self.retrieve_documents)
-        graph.add_node("grade_documents", self.grade_documents)
-        graph.add_node("rewrite_query_if_needed", self.rewrite_query_if_needed)
-        graph.add_node("extract_financial_facts", self.extract_financial_facts)
-        graph.add_node("run_calculations_if_needed", self.run_calculations_if_needed)
-        graph.add_node("generate_answer", self.generate_answer)
-        graph.add_node("verify_grounding", self.verify_grounding)
-        graph.add_node("attach_citations", self.attach_citations)
-        graph.add_node("decide_refusal_or_final_answer", self.decide_refusal_or_final_answer)
-        graph.add_node("refusal", self.refusal)
+        node_specs = {
+            "classify_query": self.classify_query,
+            "build_filters": self.build_filters,
+            "retrieve_documents": self.retrieve_documents,
+            "grade_documents": self.grade_documents,
+            "rewrite_query_if_needed": self.rewrite_query_if_needed,
+            "extract_financial_facts": self.extract_financial_facts,
+            "run_calculations_if_needed": self.run_calculations_if_needed,
+            "generate_answer": self.generate_answer,
+            "verify_grounding": self.verify_grounding,
+            "attach_citations": self.attach_citations,
+            "decide_refusal_or_final_answer": self.decide_refusal_or_final_answer,
+            "refusal_node": self.refusal,
+        }
+        state_keys = set(FinancialRAGState.__annotations__.keys())
+        conflicting = sorted(name for name in node_specs if name in state_keys)
+        if conflicting:
+            raise ValueError(f"LangGraph node names conflict with state keys: {conflicting}")
+        for name, handler in node_specs.items():
+            graph.add_node(name, handler)
 
         graph.set_entry_point("classify_query")
-        graph.add_conditional_edges("classify_query", self._route_scope, {"refusal": "refusal", "continue": "build_filters"})
+        graph.add_conditional_edges("classify_query", self._route_scope, {"refusal_node": "refusal_node", "continue": "build_filters"})
         graph.add_edge("build_filters", "retrieve_documents")
         graph.add_edge("retrieve_documents", "grade_documents")
-        graph.add_conditional_edges("grade_documents", self._route_confidence, {"rewrite": "rewrite_query_if_needed", "facts": "extract_financial_facts", "generate": "generate_answer", "refusal": "refusal"})
+        graph.add_conditional_edges("grade_documents", self._route_confidence, {"rewrite": "rewrite_query_if_needed", "facts": "extract_financial_facts", "generate": "generate_answer", "refusal_node": "refusal_node"})
         graph.add_edge("rewrite_query_if_needed", "retrieve_documents")
         graph.add_edge("extract_financial_facts", "run_calculations_if_needed")
         graph.add_edge("run_calculations_if_needed", "generate_answer")
@@ -83,11 +91,11 @@ class LangGraphRAG:
         graph.add_edge("verify_grounding", "attach_citations")
         graph.add_edge("attach_citations", "decide_refusal_or_final_answer")
         graph.add_edge("decide_refusal_or_final_answer", END)
-        graph.add_edge("refusal", END)
+        graph.add_edge("refusal_node", END)
         return graph.compile()
 
     def _route_scope(self, state: FinancialRAGState) -> str:
-        return "refusal" if state.get("query_type") == "out_of_scope" else "continue"
+        return "refusal_node" if state.get("query_type") == "out_of_scope" else "continue"
 
     def _route_confidence(self, state: FinancialRAGState) -> str:
         conf = state.get("confidence", {})
@@ -95,7 +103,7 @@ class LangGraphRAG:
             if state.get("query_type") in {"numerical", "comparison", "temporal"}:
                 return "facts"
             return "generate"
-        return "refusal" if state.get("rewritten") else "rewrite"
+        return "refusal_node" if state.get("rewritten") else "rewrite"
 
     def classify_query(self, state: FinancialRAGState) -> FinancialRAGState:
         state["query"] = state.get("query") or state["question"]
@@ -224,7 +232,7 @@ class LangGraphRAG:
         state["answer"] = refusal_message("The question is outside the indexed financial filing scope or retrieval failed.")
         state["citations"] = []
         state["confidence"] = {"score": 0.0, "label": "low", "answerable": False}
-        _trace(state, "refusal")
+        _trace(state, "refusal_node")
         return state
 
     def run(
@@ -247,6 +255,7 @@ class LangGraphRAG:
             "llm_provider": llm_provider or "extractive",
             "debug": debug,
             "rewritten": False,
+            "refusal": False,
             "trace": [],
         }
         if self.graph is not None:

@@ -17,3 +17,23 @@ def test_weak_evidence_refuses():
     state = LangGraphRAG.decide_refusal_or_final_answer(agent, state)
     assert state["refusal"] is True
     assert "not have enough grounded evidence" in state["answer"]
+
+
+def test_langgraph_builds_without_node_state_conflict(monkeypatch):
+    import src.agents.langgraph_rag as module
+
+    class FakeRetriever:
+        pass
+
+    class FakeReranker:
+        pass
+
+    monkeypatch.setattr(module, "get_retrieval_pipeline", lambda: FakeRetriever())
+    monkeypatch.setattr(module, "get_reranker", lambda: FakeReranker())
+
+    rag = module.LangGraphRAG()
+
+    if module.StateGraph is None:
+        assert rag.graph is None
+    else:
+        assert rag.graph is not None
