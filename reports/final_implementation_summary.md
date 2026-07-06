@@ -16,6 +16,49 @@
 - SEC evaluation harness now works
 - Tests pass locally: `70 passed`
 
+## Step 7 Documentation Polish
+
+- Rewrote [README.md](F:\financial-document-intelligence-rag-master\financial-document-intelligence-rag-master\README.md) to make the repository GitHub-ready with:
+  - project summary
+  - verified metrics snapshot
+  - architecture overview
+  - setup and environment variables
+  - reproducible commands
+  - demo commands
+  - example grounded answer output
+  - limitations, future improvements, testing, and troubleshooting
+- Added:
+  - [docs/architecture.md](F:\financial-document-intelligence-rag-master\financial-document-intelligence-rag-master\docs\architecture.md)
+  - [docs/quickstart.md](F:\financial-document-intelligence-rag-master\financial-document-intelligence-rag-master\docs\quickstart.md)
+  - [docs/demo_walkthrough.md](F:\financial-document-intelligence-rag-master\financial-document-intelligence-rag-master\docs\demo_walkthrough.md)
+  - [docs/metrics.md](F:\financial-document-intelligence-rag-master\financial-document-intelligence-rag-master\docs\metrics.md)
+  - [docs/known_limitations.md](F:\financial-document-intelligence-rag-master\financial-document-intelligence-rag-master\docs\known_limitations.md)
+  - [docs/reproducibility.md](F:\financial-document-intelligence-rag-master\financial-document-intelligence-rag-master\docs\reproducibility.md)
+  - [scripts/verify_project_docs.py](F:\financial-document-intelligence-rag-master\financial-document-intelligence-rag-master\scripts\verify_project_docs.py)
+- Kept the documentation technical and project-facing:
+  - no hiring-oriented or personal-pitch content was added
+  - metrics are tied to the current generated evaluation artifacts rather than hand-written claims
+
+## Final Milestone Summary
+
+- **Step 1 - Ingestion**
+  - real SEC EDGAR ingestion was connected end to end
+  - filing manifests and processed chunk outputs were verified from real filings
+- **Step 2 - Indexing**
+  - dense Chroma and persisted BM25 indexes were built from the verified SEC chunk corpus
+  - index counts were aligned with `chunks.parquet`
+- **Step 3 - Retrieval**
+  - production hybrid retrieval was implemented with dense search, BM25, metadata filtering, fusion, and reranking
+- **Step 4 - Answering**
+  - grounded answer generation was added with citations, source URLs, warnings, and extractive fallback
+- **Step 5 - Evaluation**
+  - a curated SEC evaluation set and reproducible evaluation harness were added
+- **Step 6 - Chunk Quality**
+  - section extraction and chunk quality metadata were improved and integrated into retrieval and answering
+  - honest no-answer handling was fixed for unsupported cases
+- **Step 7 - Documentation Polish**
+  - the repository was made GitHub-ready with architecture, quickstart, demo, metrics, limitations, reproducibility, and docs verification coverage
+
 ## Chunk Quality Problem
 
 - The evaluation baseline showed that many grounded answers were weak because the SEC parser and chunker were producing noisy section text.
@@ -298,7 +341,9 @@
 - `python scripts/verify_answering.py`
 - `python scripts/run_evaluation.py`
 - `python scripts/verify_evaluation.py`
+- `python scripts/verify_project_docs.py`
 - `python -m pytest -q --basetemp=.pytest-tmp-sec-quality-2`
+- `python -m pytest -q --basetemp=.pytest-tmp-project-polish`
 
 Note:
 - On this local machine, the workspace venv launcher was blocked by a Python process/approval constraint, so the commands above were executed through the bundled Codex Python runtime with the project package path appended. The outputs below reflect the real rebuilt SEC corpus and real generated indexes/reports from that run.
@@ -361,9 +406,22 @@ Note:
   - source URL coverage reported: `1.0`
   - no-answer cases handled honestly: `true`
 
+- `verify_project_docs.py`
+  - passed
+  - README exists: `true`
+  - architecture doc exists: `true`
+  - quickstart doc exists: `true`
+  - demo walkthrough exists: `true`
+  - metrics doc exists: `true`
+  - known limitations doc exists: `true`
+  - reproducibility doc exists: `true`
+  - README includes metrics, setup commands, and evaluation commands
+  - README includes no hiring-oriented or personal-pitch language
+
 - `pytest`
   - requested command `python -m pytest -q --basetemp=.pytest-tmp-sec-quality-3` hit a stale Windows permission lock on that existing temp directory
   - rerunning the suite with a fresh temp path completed successfully
+  - Step 7 docs-polish regression run: `python -m pytest -q --basetemp=.pytest-tmp-project-polish`
   - final result: `70 passed`
 
 ## Before / After Evaluation Metrics
@@ -398,4 +456,4 @@ Note:
 - No citations were faked.
 - No generated indexes or data artifacts were committed.
 - Evaluation reports were kept small enough for git.
-- UI polish, LoRA, Docker, deployment, and resume work were not touched in this step.
+- UI polish, LoRA, Docker, deployment, and other non-documentation workstreams were not touched in this step.
