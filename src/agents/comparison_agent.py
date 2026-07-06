@@ -6,7 +6,7 @@ generating structured side-by-side analyses.
 """
 from typing import List, Dict, Any, Optional
 
-from src.retrieval.hybrid_retriever import get_hybrid_retriever
+from src.retrieval.pipeline import get_retrieval_pipeline
 from src.retrieval.reranker import get_reranker
 from src.utils.logger import get_logger
 from src.utils.helpers import format_citations
@@ -24,7 +24,7 @@ class ComparisonAgent:
     """
 
     def __init__(self):
-        self.retriever = get_hybrid_retriever()
+        self.retriever = get_retrieval_pipeline()
         self.reranker = get_reranker()
 
     def compare_companies(

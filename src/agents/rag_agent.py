@@ -9,7 +9,7 @@ import time
 from typing import TypedDict, Annotated, List, Dict, Any, Optional, Literal
 from dataclasses import dataclass, field
 
-from src.retrieval.hybrid_retriever import HybridRetriever, get_hybrid_retriever
+from src.retrieval.pipeline import RetrievalPipeline, get_retrieval_pipeline
 from src.retrieval.reranker import CrossEncoderReranker, get_reranker
 from src.retrieval.multi_query import MultiQueryGenerator, get_multi_query_generator
 from src.utils.logger import get_logger, tracer
@@ -106,7 +106,7 @@ class RAGPipeline:
     """
 
     def __init__(self):
-        self.retriever = get_hybrid_retriever()
+        self.retriever = get_retrieval_pipeline()
         self.reranker = get_reranker()
         self.multi_query = get_multi_query_generator()
         self.max_retries = 2

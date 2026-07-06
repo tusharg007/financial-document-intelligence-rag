@@ -13,7 +13,7 @@ except Exception:  # pragma: no cover - tests can still inspect graceful fallbac
 
 from src.llm.factory import get_llm
 from src.retrieval.confidence import compute_confidence, refusal_message
-from src.retrieval.hybrid_retriever import get_hybrid_retriever
+from src.retrieval.pipeline import get_retrieval_pipeline
 from src.retrieval.query_router import classify_query as route_query
 from src.retrieval.reranker import get_reranker
 
@@ -50,7 +50,7 @@ class LangGraphRAG:
     """Financial RAG orchestrated with LangGraph StateGraph."""
 
     def __init__(self):
-        self.retriever = get_hybrid_retriever()
+        self.retriever = get_retrieval_pipeline()
         self.reranker = get_reranker()
         self.graph = self._build_graph()
 
