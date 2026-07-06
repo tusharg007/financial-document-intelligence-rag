@@ -30,6 +30,7 @@ data/processed/*.jsonl
 
 # Local temp/testing folders
 .tmp/
+.pytest-tmp/
 .pytest_cache/
 htmlcov/
 .coverage
