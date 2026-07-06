@@ -15,6 +15,8 @@ DOC_PATHS = {
     "metrics": ROOT / "docs" / "metrics.md",
     "known_limitations": ROOT / "docs" / "known_limitations.md",
     "reproducibility": ROOT / "docs" / "reproducibility.md",
+    "cookbooks": ROOT / "cookbooks",
+    "rag_eval_examples": ROOT / "examples" / "rag_eval_cookbook",
 }
 
 BANNED_TERMS = [
@@ -38,6 +40,7 @@ REQUIRED_README_SNIPPETS = [
     "python scripts/run_evaluation.py",
     "python scripts/verify_evaluation.py",
     "python -m pytest -q --basetemp=.pytest-tmp-readme-final",
+    "rag_eval_kit",
 ]
 
 

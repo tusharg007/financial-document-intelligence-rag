@@ -1,0 +1,14 @@
+{
+  "question": "What revenue risks are discussed in the filing?",
+  "answer": "The filing says revenue may be affected by customer demand, competition, and cloud spending trends. [Source 1]",
+  "contexts": [
+    "Revenue may be affected by lower customer demand, competition, and changes in cloud spending patterns.",
+    "The company also discusses operating margin and product transitions."
+  ],
+  "expected_keywords": [
+    "revenue",
+    "demand",
+    "competition",
+    "cloud"
+  ]
+}

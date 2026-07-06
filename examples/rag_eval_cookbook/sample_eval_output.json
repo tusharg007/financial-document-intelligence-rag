@@ -1,0 +1,17 @@
+{
+  "faithfulness": 0.7083,
+  "context_relevance": 0.5714,
+  "citation_coverage": 1.0,
+  "answer_completeness": 1.0,
+  "hallucination_flag": false,
+  "guardrail_status": "pass",
+  "warnings": [],
+  "question": "What revenue risks are discussed in the filing?",
+  "answer": "The filing says revenue may be affected by customer demand, competition, and cloud spending trends. [Source 1]",
+  "expected_keywords": [
+    "revenue",
+    "demand",
+    "competition",
+    "cloud"
+  ]
+}

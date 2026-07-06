@@ -176,6 +176,30 @@ Based on the retrieved SEC filings:
 - Streamlit UI
 - pytest verification
 
+## Developer Evaluation Kit
+
+This repository also includes a lightweight, deterministic developer-facing package: `rag_eval_kit`.
+
+It provides:
+
+- an SDK-style API:
+  - `from rag_eval_kit import evaluate_rag_response`
+- a CLI for evaluating a single RAG response payload
+- cookbook examples for debugging retrieval, prompts, guardrails, and observability
+- JSONL observability logging via `log_rag_observation()`
+- fully offline heuristic metrics with no external judge dependency
+
+Example CLI:
+
+```powershell
+python -m rag_eval_kit.cli --input examples/rag_eval_cookbook/sample_eval_input.json --output reports/rag_eval_kit_sample_output.json
+```
+
+See:
+
+- [examples/rag_eval_cookbook/README.md](/F:/financial-document-intelligence-rag-master/financial-document-intelligence-rag-master/examples/rag_eval_cookbook/README.md)
+- [cookbooks/01_evaluate_rag_pipeline.md](/F:/financial-document-intelligence-rag-master/financial-document-intelligence-rag-master/cookbooks/01_evaluate_rag_pipeline.md)
+
 ## Repository Layout
 
 ```text
@@ -232,4 +256,3 @@ python -m pytest -q --basetemp=.pytest-tmp-readme-final-run2
 ### Missing indexes in the hosted app
 
 That is expected for the public GitHub/Streamlit deployment. The large generated artifacts are intentionally excluded from version control. Use the local reproduction commands to rebuild the full pipeline.
-
