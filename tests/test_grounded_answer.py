@@ -67,6 +67,10 @@ def _sample_results():
             "bm25_score": 7.2,
             "fused_score": 0.02,
             "reranker_score": 2.5,
+            "is_toc_like": False,
+            "boilerplate_score": 0.05,
+            "content_quality_score": 0.9,
+            "section_confidence": 0.95,
         }
     ]
 
@@ -90,6 +94,10 @@ def _boilerplate_results():
             "bm25_score": 8.0,
             "fused_score": 0.03,
             "reranker_score": 2.6,
+            "is_toc_like": True,
+            "boilerplate_score": 0.95,
+            "content_quality_score": 0.05,
+            "section_confidence": 0.6,
         },
         {
             "doc_id": "real-1",
@@ -108,6 +116,59 @@ def _boilerplate_results():
             "bm25_score": 6.1,
             "fused_score": 0.02,
             "reranker_score": 2.2,
+            "is_toc_like": False,
+            "boilerplate_score": 0.1,
+            "content_quality_score": 0.92,
+            "section_confidence": 0.96,
+        },
+    ]
+
+
+def _unsupported_topic_results():
+    return [
+        {
+            "doc_id": "nvda-1",
+            "ticker": "NVDA",
+            "company": "NVIDIA CORP",
+            "form_type": "10-Q",
+            "filing_date": "2023-11-21",
+            "fiscal_year": 2023,
+            "fiscal_period": "Q3",
+            "section": "MD&A",
+            "accession_number": "0001045810-23-000227",
+            "source_url": "https://www.sec.gov/example-nvda-1",
+            "content": "Overview Our Company and Our Businesses Since our founding in 1993, NVIDIA has been a pioneer in accelerated computing.",
+            "content_preview": "Overview Our Company and Our Businesses Since our founding in 1993, NVIDIA has been a pioneer in accelerated computing.",
+            "dense_score": 0.8,
+            "bm25_score": 3.5,
+            "fused_score": 0.02,
+            "reranker_score": 1.1,
+            "is_toc_like": False,
+            "boilerplate_score": 0.05,
+            "content_quality_score": 0.7,
+            "section_confidence": 0.8,
+        },
+        {
+            "doc_id": "nvda-2",
+            "ticker": "NVDA",
+            "company": "NVIDIA CORP",
+            "form_type": "10-Q",
+            "filing_date": "2024-05-29",
+            "fiscal_year": 2024,
+            "fiscal_period": "Q1",
+            "section": "Risk Factors",
+            "accession_number": "0001045810-24-000124",
+            "source_url": "https://www.sec.gov/example-nvda-2",
+            "content": "The program does not obligate NVIDIA to acquire any particular amount of common stock and the program may be suspended at any time at our discretion.",
+            "content_preview": "The program does not obligate NVIDIA to acquire any particular amount of common stock and the program may be suspended at any time at our discretion.",
+            "dense_score": 0.75,
+            "bm25_score": 3.1,
+            "fused_score": 0.018,
+            "reranker_score": 1.0,
+            "is_toc_like": False,
+            "boilerplate_score": 0.05,
+            "content_quality_score": 0.6,
+            "section_confidence": 0.75,
         },
     ]
 
@@ -236,6 +297,20 @@ def test_weak_evidence_warning_still_works():
     assert any("low" in warning.lower() or "threshold" in warning.lower() for warning in result["warnings"])
 
 
+def test_high_quality_evidence_can_be_grounded_with_warnings_not_weak():
+    from src.answering.grounded_answer import GroundedAnswerer
+
+    answerer = GroundedAnswerer(retriever=FakeRetriever(_boilerplate_results()), provider=ExtractiveProvider())
+    result = answerer.answer_question(
+        "What are Apple's main risk factors?",
+        top_k=3,
+        filters={"ticker": "AAPL", "section": "Risk Factors"},
+    )
+
+    assert result["grounding_status"] in {"grounded", "grounded_with_warnings"}
+    assert result["confidence"]["answerable"] is True
+
+
 def test_relaxed_filter_evidence_recovery_uses_better_company_level_chunks():
     from src.answering.grounded_answer import GroundedAnswerer
 
@@ -257,6 +332,10 @@ def test_relaxed_filter_evidence_recovery_uses_better_company_level_chunks():
             "bm25_score": 7.9,
             "fused_score": 0.02,
             "reranker_score": 2.2,
+            "is_toc_like": True,
+            "boilerplate_score": 0.95,
+            "content_quality_score": 0.05,
+            "section_confidence": 0.3,
         }
     ]
     relaxed_results = [
@@ -271,12 +350,16 @@ def test_relaxed_filter_evidence_recovery_uses_better_company_level_chunks():
             "section": "Financial Statements",
             "accession_number": "0000320193-24-000123",
             "source_url": "https://www.sec.gov/relaxed",
-            "content": "Apple states that its business is subject to intense competition, supply chain disruption, product demand volatility, and regulatory or legal risks across multiple markets.",
-            "content_preview": "Apple states that its business is subject to intense competition, supply chain disruption, product demand volatility, and regulatory or legal risks across multiple markets.",
+            "content": "Apple states that its main risk factors include intense competition, supply chain disruption, product demand volatility, and regulatory or legal risks across multiple markets.",
+            "content_preview": "Apple states that its main risk factors include intense competition, supply chain disruption, product demand volatility, and regulatory or legal risks across multiple markets.",
             "dense_score": 0.6,
             "bm25_score": 6.8,
             "fused_score": 0.015,
             "reranker_score": 1.8,
+            "is_toc_like": False,
+            "boilerplate_score": 0.05,
+            "content_quality_score": 0.95,
+            "section_confidence": 0.92,
         }
     ]
     retriever = MappingRetriever({
@@ -295,3 +378,53 @@ def test_relaxed_filter_evidence_recovery_uses_better_company_level_chunks():
     assert retriever.calls[1]["filters"] == {"ticker": "AAPL"}
     assert "supply chain disruption" in result["answer"].lower()
     assert any("widened evidence selection" in warning.lower() for warning in result["warnings"])
+
+
+def test_no_answer_year_outside_corpus_returns_insufficient_evidence():
+    from src.answering.grounded_answer import GroundedAnswerer
+
+    answerer = GroundedAnswerer(retriever=FakeRetriever(_boilerplate_results()), provider=ExtractiveProvider())
+    result = answerer.answer_question(
+        "What did Apple disclose about 2021 risk factors?",
+        top_k=3,
+        filters={"ticker": "AAPL", "section": "Risk Factors"},
+    )
+
+    assert result["grounding_status"] == "insufficient_evidence"
+    assert "do not have enough grounded evidence" in result["answer"].lower()
+    assert "outside the indexed sec corpus" in result["answer"].lower() or any("year" in warning.lower() for warning in result["warnings"])
+
+
+def test_no_answer_unsupported_topic_is_not_confident():
+    from src.answering.grounded_answer import GroundedAnswerer
+
+    answerer = GroundedAnswerer(retriever=FakeRetriever(_unsupported_topic_results()), provider=ExtractiveProvider())
+    result = answerer.answer_question(
+        "What does Nvidia say about dividend policy in these filings?",
+        top_k=3,
+        filters={"ticker": "NVDA"},
+    )
+
+    assert result["grounding_status"] == "insufficient_evidence"
+    assert result["confidence"]["answerable"] is False
+    assert (
+        "do not directly support" in result["answer"].lower()
+        or "do not answer it directly" in result["answer"].lower()
+        or "do not directly discuss" in result["answer"].lower()
+    )
+    assert result["citations"]
+
+
+def test_sec_eval_018_dividend_policy_requires_actual_dividend_evidence():
+    from src.answering.grounded_answer import GroundedAnswerer
+
+    answerer = GroundedAnswerer(retriever=FakeRetriever(_unsupported_topic_results()), provider=ExtractiveProvider())
+    result = answerer.answer_question(
+        "What does Nvidia say about dividend policy in these filings?",
+        top_k=5,
+        filters={"ticker": "NVDA"},
+    )
+
+    assert result["grounding_status"] == "insufficient_evidence"
+    assert result["confidence"]["unsupported_dividend_policy"] is True
+    assert any("dividend-policy" in warning.lower() for warning in result["warnings"])

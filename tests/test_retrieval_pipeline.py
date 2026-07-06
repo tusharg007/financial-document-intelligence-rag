@@ -137,3 +137,57 @@ def test_pipeline_fails_clearly_if_both_backends_missing():
 
     with pytest.raises(RuntimeError, match="No retrieval backend is available"):
         pipeline.retrieve("Any query", top_k=3)
+
+
+def test_quality_metadata_downranks_toc_and_boilerplate():
+    from src.retrieval.pipeline import RetrievalPipeline
+
+    dense = FakeDense(results=[
+        {
+            "doc_id": "toc",
+            "content": "Item 1A. Risk Factors table of contents forward-looking statements.",
+            "score": 0.95,
+            "metadata": {
+                "ticker": "AAPL",
+                "company": "Apple Inc.",
+                "form_type": "10-K",
+                "filing_date": "2024-11-01",
+                "fiscal_year": 2024,
+                "fiscal_period": "FY",
+                "section": "Risk Factors",
+                "accession_number": "toc",
+                "source_url": "https://sec/toc",
+                "is_toc_like": True,
+                "boilerplate_score": 0.9,
+                "content_quality_score": 0.05,
+                "section_confidence": 0.55,
+            },
+        },
+        {
+            "doc_id": "substantive",
+            "content": "Apple says its business faces competition, supply chain disruption, and regulatory risks.",
+            "score": 0.8,
+            "metadata": {
+                "ticker": "AAPL",
+                "company": "Apple Inc.",
+                "form_type": "10-K",
+                "filing_date": "2024-11-01",
+                "fiscal_year": 2024,
+                "fiscal_period": "FY",
+                "section": "Risk Factors",
+                "accession_number": "sub",
+                "source_url": "https://sec/sub",
+                "is_toc_like": False,
+                "boilerplate_score": 0.05,
+                "content_quality_score": 0.92,
+                "section_confidence": 0.94,
+            },
+        },
+    ])
+    sparse = FakeSparse(results=[])
+    pipeline = RetrievalPipeline(dense_embedder=dense, sparse_embedder=sparse, reranker=FakeReranker())
+
+    results = pipeline.retrieve("Apple risk factors", top_k=2, filters={"ticker": "AAPL", "section": "Risk Factors"})
+
+    assert [result["doc_id"] for result in results] == ["substantive", "toc"]
+    assert results[0]["quality_adjusted_score"] > results[1]["quality_adjusted_score"]

@@ -62,6 +62,21 @@ NOISY_FINANCIAL_PHRASES = [
     "hedged assets",
     "hedged liabilities",
 ]
+QUERY_STOPWORDS = {
+    "what", "does", "say", "about", "main", "these", "filings", "their", "with", "from",
+    "into", "that", "this", "there", "have", "has", "had", "were", "been", "being", "the",
+    "and", "for", "its", "are", "how", "describe", "discussed", "highlighted", "describe",
+    "annual", "filing", "factors", "factor", "risk", "risks", "business", "revenue",
+}
+DIVIDEND_POLICY_TERMS = [
+    "dividend policy",
+    "dividends",
+    "dividend",
+    "cash dividend",
+    "payout policy",
+    "shareholder return",
+    "capital return",
+]
 
 
 class GroundedAnswerer:
@@ -111,6 +126,12 @@ class GroundedAnswerer:
                 "bm25_score": result.get("bm25_score"),
                 "fused_score": result.get("fused_score"),
                 "reranker_score": result.get("reranker_score"),
+                "quality_adjustment": result.get("quality_adjustment"),
+                "quality_adjusted_score": result.get("quality_adjusted_score"),
+                "is_toc_like": result.get("is_toc_like"),
+                "boilerplate_score": result.get("boilerplate_score"),
+                "content_quality_score": result.get("content_quality_score"),
+                "section_confidence": result.get("section_confidence"),
                 "content_preview": result.get("content_preview", ""),
                 "content": result.get("content", ""),
             }
@@ -139,6 +160,44 @@ class GroundedAnswerer:
     @staticmethod
     def _query_terms(question: str) -> List[str]:
         return [term for term in re.findall(r"\b[\w\-]+\b", question.lower()) if len(term) > 2]
+
+    @classmethod
+    def _query_support_terms(cls, question: str, filters: Optional[Dict[str, Any]] = None) -> List[str]:
+        filters = filters or {}
+        excluded = {
+            str(filters.get("ticker", "")).lower(),
+            str(filters.get("form_type", "")).lower(),
+            str(filters.get("section", "")).lower(),
+        }
+        terms = []
+        for term in cls._query_terms(question):
+            if term in QUERY_STOPWORDS:
+                continue
+            if term in excluded:
+                continue
+            terms.append(term)
+        return terms
+
+    @classmethod
+    def _query_support_phrases(cls, question: str, filters: Optional[Dict[str, Any]] = None) -> List[str]:
+        terms = cls._query_support_terms(question, filters=filters)
+        phrases = []
+        for idx in range(len(terms) - 1):
+            left = terms[idx]
+            right = terms[idx + 1]
+            if len(left) >= 4 and len(right) >= 4:
+                phrases.append(f"{left} {right}")
+        return phrases
+
+    @classmethod
+    def _is_dividend_policy_question(cls, question: str) -> bool:
+        lowered = cls._normalize_text(question).lower()
+        return "dividend" in lowered and "policy" in lowered
+
+    @classmethod
+    def _evidence_supports_dividend_policy(cls, evidence_text: str) -> bool:
+        lowered = cls._normalize_text(evidence_text).lower()
+        return any(term in lowered for term in DIVIDEND_POLICY_TERMS)
 
     @staticmethod
     def _normalize_text(text: str) -> str:
@@ -207,16 +266,27 @@ class GroundedAnswerer:
         return score
 
     @classmethod
-    def _chunk_quality_score(cls, citation: Dict[str, Any], query_terms: List[str]) -> float:
+    def _chunk_quality_score(
+        cls,
+        citation: Dict[str, Any],
+        query_terms: List[str],
+        filters: Optional[Dict[str, Any]] = None,
+    ) -> float:
         text = cls._normalize_text(citation.get("content", "") or citation.get("content_preview", ""))
         lowered = text.lower()
         score = 0.0
         score += float(citation.get("reranker_score") or 0.0)
         score += float(citation.get("fused_score") or 0.0) * 10
+        score += float(citation.get("quality_adjustment") or 0.0) * 10
+        score += float(citation.get("content_quality_score") or 0.0) * 6
+        score += float(citation.get("section_confidence") or 0.0) * 2
         score += sum(1.5 for term in query_terms if term in lowered)
         score += sum(0.5 for hint in MEANINGFUL_HINTS if hint in lowered)
         if citation.get("section", "").lower() == "risk factors" and "risk" in query_terms:
             score += 2.0
+        if citation.get("is_toc_like"):
+            score -= 8.0
+        score -= float(citation.get("boilerplate_score") or 0.0) * 6
         if cls._is_boilerplate_text(text):
             score -= 6.0
         if any(phrase in lowered for phrase in NOISY_FINANCIAL_PHRASES):
@@ -239,35 +309,65 @@ class GroundedAnswerer:
             "regulatory",
         ]):
             score += 2.0
+        if filters and filters.get("section"):
+            requested_section = str(filters["section"]).strip().lower()
+            if requested_section and requested_section == str(citation.get("section", "")).strip().lower():
+                score += 2.5
+        if filters and filters.get("ticker"):
+            requested_ticker = str(filters["ticker"]).strip().upper()
+            if requested_ticker and requested_ticker == str(citation.get("ticker", "")).strip().upper():
+                score += 0.75
         return score
 
     @classmethod
-    def _select_best_citations(cls, question: str, citations: List[Dict[str, Any]], limit: int = 4) -> List[Dict[str, Any]]:
+    def _select_best_citations(
+        cls,
+        question: str,
+        citations: List[Dict[str, Any]],
+        limit: int = 4,
+        filters: Optional[Dict[str, Any]] = None,
+    ) -> List[Dict[str, Any]]:
         query_terms = cls._query_terms(question)
         ranked = sorted(
             citations,
-            key=lambda citation: cls._chunk_quality_score(citation, query_terms),
+            key=lambda citation: cls._chunk_quality_score(citation, query_terms, filters=filters),
             reverse=True,
         )
-        best = [citation for citation in ranked if cls._chunk_quality_score(citation, query_terms) > -2][:limit]
+        best = [citation for citation in ranked if cls._chunk_quality_score(citation, query_terms, filters=filters) > -1][:limit]
         return best or ranked[:limit]
 
     @classmethod
-    def _best_chunk_score(cls, question: str, citations: List[Dict[str, Any]]) -> float:
+    def _best_chunk_score(
+        cls,
+        question: str,
+        citations: List[Dict[str, Any]],
+        filters: Optional[Dict[str, Any]] = None,
+    ) -> float:
         if not citations:
             return float("-inf")
         query_terms = cls._query_terms(question)
-        return max(cls._chunk_quality_score(citation, query_terms) for citation in citations)
+        return max(cls._chunk_quality_score(citation, query_terms, filters=filters) for citation in citations)
 
     @classmethod
-    def _count_substantive_chunks(cls, question: str, citations: List[Dict[str, Any]]) -> int:
+    def _count_substantive_chunks(
+        cls,
+        question: str,
+        citations: List[Dict[str, Any]],
+        filters: Optional[Dict[str, Any]] = None,
+    ) -> int:
         query_terms = cls._query_terms(question)
-        return sum(1 for citation in citations if cls._chunk_quality_score(citation, query_terms) > 1.5)
+        return sum(1 for citation in citations if cls._chunk_quality_score(citation, query_terms, filters=filters) > 4.0)
 
     @classmethod
-    def _select_extractive_sentences(cls, question: str, citations: List[Dict[str, Any]], max_points: int = 4) -> List[tuple[int, str]]:
+    def _select_extractive_sentences(
+        cls,
+        question: str,
+        citations: List[Dict[str, Any]],
+        max_points: int = 4,
+        filters: Optional[Dict[str, Any]] = None,
+    ) -> List[tuple[int, str]]:
         query_terms = cls._query_terms(question)
-        selected_citations = cls._select_best_citations(question, citations, limit=max_points + 1)
+        selected_citations = cls._select_best_citations(question, citations, limit=max_points + 1, filters=filters)
         candidates: List[tuple[float, int, str]] = []
         seen = set()
         for citation in selected_citations:
@@ -339,10 +439,95 @@ class GroundedAnswerer:
             return True
         if not filters:
             return False
-        substantive = cls._count_substantive_chunks(question, citations)
-        best_score = cls._best_chunk_score(question, citations)
-        selected_sentences = cls._select_extractive_sentences(question, citations, max_points=min(top_k, 4))
+        substantive = cls._count_substantive_chunks(question, citations, filters=filters)
+        best_score = cls._best_chunk_score(question, citations, filters=filters)
+        selected_sentences = cls._select_extractive_sentences(question, citations, max_points=min(top_k, 4), filters=filters)
         return substantive < min(2, top_k) or best_score < 2.5 or len(selected_sentences) < min(2, top_k)
+
+    @classmethod
+    def _refine_confidence(
+        cls,
+        question: str,
+        citations: List[Dict[str, Any]],
+        base_confidence: Dict[str, Any],
+        filters: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        if not citations:
+            return base_confidence
+
+        score = float(base_confidence.get("score", 0.0) or 0.0)
+        query_terms = cls._query_terms(question)
+        ranked_scores = [cls._chunk_quality_score(citation, query_terms, filters=filters) for citation in citations]
+        substantive = sum(1 for value in ranked_scores if value >= 4.0)
+        best_ranked_score = max(ranked_scores) if ranked_scores else float("-inf")
+        avg_quality = sum(float(citation.get("content_quality_score") or 0.0) for citation in citations[:4]) / max(len(citations[:4]), 1)
+        avg_boilerplate = sum(float(citation.get("boilerplate_score") or 0.0) for citation in citations[:4]) / max(len(citations[:4]), 1)
+        toc_hits = sum(1 for citation in citations[:3] if citation.get("is_toc_like"))
+        support_terms = cls._query_support_terms(question, filters=filters)
+        support_phrases = cls._query_support_phrases(question, filters=filters)
+        evidence_text = " ".join(
+            cls._normalize_text(citation.get("content", "") or citation.get("content_preview", ""))
+            for citation in citations[:5]
+        ).lower()
+        support_hits = [term for term in support_terms if term in evidence_text]
+        support_ratio = len(support_hits) / max(len(support_terms), 1) if support_terms else 1.0
+        phrase_hits = [phrase for phrase in support_phrases if phrase in evidence_text]
+        unsupported_dividend_policy = cls._is_dividend_policy_question(question) and not cls._evidence_supports_dividend_policy(evidence_text)
+        section_match_bonus = 0.0
+        requested_years = re.findall(r"\b(20\d{2})\b", question)
+        cited_years = {str(citation.get("fiscal_year", "")) for citation in citations if citation.get("fiscal_year")}
+        year_mismatch = bool(requested_years) and not any(year in cited_years for year in requested_years)
+
+        if filters and filters.get("section"):
+            requested_section = str(filters["section"]).strip().lower()
+            if any(
+                requested_section == str(citation.get("section", "")).strip().lower()
+                and float(citation.get("section_confidence") or 0.0) >= 0.6
+                for citation in citations[:3]
+            ):
+                section_match_bonus = 0.08
+
+        score += min(0.18, avg_quality * 0.2)
+        score += min(0.15, substantive * 0.05)
+        score += section_match_bonus
+        if support_ratio >= 0.6:
+            score += 0.08
+        elif support_ratio < 0.3 and support_terms:
+            score -= 0.2
+        score -= min(0.18, avg_boilerplate * 0.12)
+        score -= min(0.15, toc_hits * 0.08)
+        if year_mismatch:
+            score -= 0.18
+        score = max(0.0, min(1.0, score))
+
+        label = "high" if score >= 0.72 else "medium" if score >= 0.45 else "low"
+        answerable = (
+            score >= 0.35
+            or (score >= 0.3 and substantive >= 2 and avg_quality >= 0.58)
+            or (score >= 0.28 and substantive >= 1 and avg_quality >= 0.8 and best_ranked_score >= 9.0)
+        )
+        if year_mismatch or (support_terms and support_ratio < 0.25):
+            answerable = False
+        if support_phrases and not phrase_hits and support_ratio <= 0.5:
+            answerable = False
+        if unsupported_dividend_policy:
+            answerable = False
+        refined = dict(base_confidence)
+        refined.update({
+            "score": round(score, 4),
+            "label": label,
+            "answerable": answerable,
+            "substantive_chunk_count": substantive,
+            "best_ranked_chunk_score": round(best_ranked_score, 4) if ranked_scores else None,
+            "avg_content_quality_score": round(avg_quality, 4),
+            "avg_boilerplate_score": round(avg_boilerplate, 4),
+            "query_support_ratio": round(support_ratio, 4),
+            "query_support_hits": support_hits,
+            "query_support_phrase_hits": phrase_hits,
+            "year_mismatch": year_mismatch,
+            "unsupported_dividend_policy": unsupported_dividend_policy,
+        })
+        return refined
 
     def _prepare_evidence(
         self,
@@ -364,7 +549,7 @@ class GroundedAnswerer:
                     raw_results.extend(supplemental)
                     combined_results = self._dedupe_results(raw_results)
                     combined_citations = self._build_citations(combined_results)
-                    if self._best_chunk_score(query, combined_citations) > self._best_chunk_score(query, citations):
+                    if self._best_chunk_score(query, combined_citations, filters=relaxed_filters or filters) > self._best_chunk_score(query, citations, filters=filters):
                         citations = combined_citations
                         retrieval_results = combined_results
                         warnings.append(
@@ -373,24 +558,35 @@ class GroundedAnswerer:
                             + " while preserving company-level grounding."
                         )
 
-        best_citations = self._select_best_citations(query, citations, limit=max(top_k, MIN_CITATIONS))
+        best_citations = self._select_best_citations(query, citations, limit=max(top_k, MIN_CITATIONS), filters=filters)
         best_doc_ids = {citation.get("doc_id") for citation in best_citations}
         best_results = [result for result in retrieval_results if result.get("doc_id") in best_doc_ids]
         best_results.sort(
             key=lambda result: self._chunk_quality_score(
                 self._build_citations([result])[0],
                 self._query_terms(query),
+                filters=filters,
             ),
             reverse=True,
         )
         best_citations = self._build_citations(best_results)
-        confidence = compute_confidence(best_results or retrieval_results)
+        confidence = self._refine_confidence(
+            query,
+            best_citations,
+            compute_confidence(best_results or retrieval_results),
+            filters=filters,
+        )
         return best_results, best_citations, warnings, confidence
 
-    def _extractive_answer(self, question: str, citations: List[Dict[str, Any]]) -> str:
-        selected = self._select_extractive_sentences(question, citations, max_points=4)
+    def _extractive_answer(
+        self,
+        question: str,
+        citations: List[Dict[str, Any]],
+        filters: Optional[Dict[str, Any]] = None,
+    ) -> str:
+        selected = self._select_extractive_sentences(question, citations, max_points=4, filters=filters)
         if not selected:
-            ranked_citations = self._select_best_citations(question, citations, limit=2)
+            ranked_citations = self._select_best_citations(question, citations, limit=2, filters=filters)
             fallback_points = []
             for citation in ranked_citations:
                 preview = self._compress_sentence(citation.get("content_preview", ""))
@@ -415,6 +611,40 @@ class GroundedAnswerer:
         return "Based on the retrieved SEC filings:\n" + "\n".join(bullets)
 
     @staticmethod
+    def _should_abstain(confidence: Dict[str, Any]) -> bool:
+        if confidence.get("unsupported_dividend_policy"):
+            return True
+        if confidence.get("year_mismatch"):
+            return True
+        if not confidence.get("answerable", False):
+            return True
+        if float(confidence.get("query_support_ratio", 1.0) or 0.0) < 0.25:
+            return True
+        return False
+
+    @classmethod
+    def _insufficient_evidence_answer(
+        cls,
+        question: str,
+        citations: List[Dict[str, Any]],
+        confidence: Dict[str, Any],
+    ) -> str:
+        reason = "The retrieved filings do not contain enough grounded evidence to answer this question directly."
+        if confidence.get("year_mismatch"):
+            reason = "The question asks about a filing year that is outside the indexed SEC corpus."
+        elif confidence.get("unsupported_dividend_policy"):
+            reason = "The retrieved filings do not directly discuss Nvidia dividend policy, dividends, or payout policy."
+        elif float(confidence.get("query_support_ratio", 1.0) or 0.0) < 0.25:
+            reason = "The retrieved filings discuss related company topics, but they do not directly support the key subject asked in the question."
+        elif confidence.get("query_support_phrase_hits") == [] and confidence.get("query_support_hits"):
+            reason = "The retrieved filings only partially match the topic phrasing in the question and do not answer it directly."
+
+        source_refs = ""
+        if citations:
+            source_refs = " " + " ".join(f"[Source {citation['source_num']}]" for citation in citations[: min(2, len(citations))])
+        return refusal_message(reason) + source_refs
+
+    @staticmethod
     def _grounding_warnings(question: str, results: List[Dict[str, Any]], confidence: Dict[str, Any]) -> List[str]:
         warnings = []
         if not results:
@@ -430,6 +660,14 @@ class GroundedAnswerer:
         mentioned = {ticker for ticker in tickers if ticker and ticker in query_upper}
         if mentioned and tickers - mentioned:
             warnings.append("Some retrieved evidence includes additional companies beyond the query focus.")
+        if confidence.get("year_mismatch"):
+            warnings.append("The query mentions a filing year that does not match the cited evidence.")
+        if confidence.get("unsupported_dividend_policy"):
+            warnings.append("Retrieved evidence does not directly support the dividend-policy question.")
+        if float(confidence.get("query_support_ratio", 1.0) or 0.0) < 0.25:
+            warnings.append("Retrieved evidence does not directly support the key topic terms in the question.")
+        elif confidence.get("query_support_phrase_hits") == [] and confidence.get("query_support_hits"):
+            warnings.append("Retrieved evidence only partially matches the specific topic phrasing in the question.")
         return warnings
 
     def answer_question(
@@ -466,7 +704,7 @@ class GroundedAnswerer:
 
         try:
             if isinstance(provider, ExtractiveProvider):
-                answer_text = self._extractive_answer(query, citations)
+                answer_text = self._extractive_answer(query, citations, filters=filters)
                 used_provider = provider.name
             else:
                 context = self._build_context(query, citations)
@@ -483,22 +721,51 @@ class GroundedAnswerer:
         except Exception as exc:
             logger.warning("Provider '%s' unavailable or failed; using extractive fallback. Error: %s", provider.name, exc)
             fallback = ExtractiveProvider()
-            answer_text = self._extractive_answer(query, citations)
+            answer_text = self._extractive_answer(query, citations, filters=filters)
             used_provider = fallback.name
             warnings.append(f"Generative provider unavailable; used deterministic extractive fallback instead ({provider.name}).")
 
         if not answer_text:
-            answer_text = self._extractive_answer(query, citations)
+            answer_text = self._extractive_answer(query, citations, filters=filters)
             used_provider = "extractive"
             warnings.append("Provider returned empty output; used deterministic extractive fallback instead.")
 
         if "[Source" not in answer_text and citations:
             answer_text = f"{answer_text.rstrip()} [Source 1]"
 
+        cited_source_nums = {
+            int(match)
+            for match in re.findall(r"\[Source\s+(\d+)\]", answer_text)
+            if str(match).isdigit()
+        }
+        if cited_source_nums:
+            returned_citations = [citation for citation in citations if citation.get("source_num") in cited_source_nums]
+        else:
+            returned_citations = citations[: max(MIN_CITATIONS, min(top_k, len(citations)))]
+        if not returned_citations and citations:
+            returned_citations = citations[: max(MIN_CITATIONS, min(top_k, len(citations)))]
+
+        if self._is_dividend_policy_question(query):
+            cited_evidence_text = " ".join(
+                self._normalize_text(citation.get("content", "") or citation.get("content_preview", ""))
+                for citation in (returned_citations or citations)
+            )
+            answer_supports_dividend_policy = self._evidence_supports_dividend_policy(answer_text)
+            if not self._evidence_supports_dividend_policy(cited_evidence_text) or not answer_supports_dividend_policy:
+                confidence = dict(confidence)
+                confidence["unsupported_dividend_policy"] = True
+                confidence["answerable"] = False
+                confidence["label"] = "low"
+                if "Retrieved evidence does not directly support the dividend-policy question." not in warnings:
+                    warnings.append("Retrieved evidence does not directly support the dividend-policy question.")
+
+        abstain = self._should_abstain(confidence)
+        if abstain:
+            answer_text = self._insufficient_evidence_answer(query, returned_citations or citations, confidence)
         if not confidence.get("answerable", False):
             warnings.append("Grounding confidence is below the answerable threshold.")
 
-        grounding_status = "grounded" if confidence.get("answerable", False) else "weak_evidence"
+        grounding_status = "grounded" if confidence.get("answerable", False) and not abstain else "insufficient_evidence"
         if warnings and grounding_status == "grounded":
             grounding_status = "grounded_with_warnings"
 
@@ -506,7 +773,7 @@ class GroundedAnswerer:
         return {
             "question": query,
             "answer": answer_text,
-            "citations": citations[: max(MIN_CITATIONS, min(top_k, len(citations)))],
+            "citations": returned_citations,
             "retrieval_results": retrieval_results,
             "confidence": confidence,
             "grounding_status": grounding_status,

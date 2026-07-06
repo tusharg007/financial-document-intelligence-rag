@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Any, Dict, Iterable, List
 
@@ -23,23 +24,121 @@ REQUIRED_METADATA = [
     "source_url",
 ]
 
+TOC_PATTERNS = [
+    r"table\s+of\s+contents",
+    r"item\s+1a[\.\-:\s]+risk\s+factors",
+    r"item\s+1b[\.\-:\s]+unresolved\s+staff\s+comments",
+    r"item\s+2[\.\-:\s]+unregistered\s+sales",
+    r"item\s+3[\.\-:\s]+defaults",
+    r"item\s+4[\.\-:\s]+mine\s+safety\s+disclosures",
+    r"item\s+5[\.\-:\s]+other\s+information",
+    r"item\s+6[\.\-:\s]+exhibits",
+]
+BOILERPLATE_PATTERNS = [
+    r"forward-looking\s+statements",
+    r"no\s+obligation\s+to\s+revise\s+or\s+update",
+    r"except\s+as\s+required\s+by\s+law",
+    r"unless\s+otherwise\s+stated",
+]
+SUBSTANTIVE_HINTS = [
+    "risk",
+    "competition",
+    "demand",
+    "manufacturing",
+    "supply chain",
+    "regulatory",
+    "financial condition",
+    "results of operations",
+    "business",
+    "revenue",
+    "customers",
+]
+
+
+def _normalize_text(text: str) -> str:
+    return re.sub(r"\s+", " ", str(text or "")).strip()
+
 
 def split_text(text: str, chunk_size: int | None = None, chunk_overlap: int | None = None) -> List[str]:
     """Split text without crossing section boundaries supplied by the caller."""
     chunk_size = chunk_size or settings.chunk_size
     chunk_overlap = chunk_overlap if chunk_overlap is not None else settings.chunk_overlap
-    text = " ".join((text or "").split())
+    text = _normalize_text(text)
     if not text:
         return []
     chunks: List[str] = []
     start = 0
     while start < len(text):
         end = min(len(text), start + chunk_size)
+        if end < len(text):
+            split_at = text.rfind(" ", start, end)
+            if split_at > start + int(chunk_size * 0.6):
+                end = split_at
         chunks.append(text[start:end].strip())
         if end >= len(text):
             break
         start = max(end - chunk_overlap, start + 1)
     return chunks
+
+
+def is_toc_like(text: str) -> bool:
+    normalized = _normalize_text(text).lower()
+    toc_hits = sum(1 for pattern in TOC_PATTERNS if re.search(pattern, normalized, flags=re.I))
+    item_hits = len(re.findall(r"\bitem\s+\d+[a-z]?\b", normalized))
+    punctuation_hits = len(re.findall(r"[.!?]", normalized))
+    return "table of contents" in normalized or toc_hits >= 2 or (item_hits >= 4 and punctuation_hits <= 2)
+
+
+def boilerplate_score(text: str) -> float:
+    normalized = _normalize_text(text).lower()
+    hits = sum(1 for pattern in BOILERPLATE_PATTERNS if re.search(pattern, normalized, flags=re.I))
+    return min(1.0, hits / max(len(BOILERPLATE_PATTERNS), 1))
+
+
+def content_quality_score(text: str, section: str = "") -> float:
+    normalized = _normalize_text(text)
+    lowered = normalized.lower()
+    score = 0.3
+    if len(normalized) >= 180:
+        score += 0.15
+    if len(normalized) >= 500:
+        score += 0.1
+    score += min(0.2, sum(0.04 for hint in SUBSTANTIVE_HINTS if hint in lowered))
+    sentence_count = len(re.findall(r"[.!?]", normalized))
+    if sentence_count >= 2:
+        score += 0.1
+    if section in {"Financial Statements", "Notes", "Table"} and re.search(r"\$|\bnet income\b|\brevenue\b|\bassets\b", lowered):
+        score += 0.15
+    if is_toc_like(normalized):
+        score -= 0.55
+    score -= boilerplate_score(normalized) * 0.35
+    return round(max(0.0, min(1.0, score)), 3)
+
+
+def _should_exclude_chunk(section: str, text: str, quality: Dict[str, Any]) -> bool:
+    normalized = _normalize_text(text)
+    if len(normalized) < 100:
+        return True
+    if quality["is_toc_like"] and quality["content_quality_score"] < 0.3:
+        return True
+    if section in {"Risk Factors", "Business", "MD&A", "Quantitative and Qualitative Disclosures"}:
+        if quality["boilerplate_score"] >= 0.7 and quality["content_quality_score"] < 0.4:
+            return True
+    return False
+
+
+def assess_chunk_quality(text: str, section: str = "", section_confidence: float | None = None) -> Dict[str, Any]:
+    quality = {
+        "is_toc_like": is_toc_like(text),
+        "boilerplate_score": boilerplate_score(text),
+        "content_quality_score": content_quality_score(text, section=section),
+    }
+    quality["section_confidence"] = (
+        float(section_confidence)
+        if section_confidence not in (None, "")
+        else 0.0
+    )
+    return quality
 
 
 def chunk_sections(
@@ -54,14 +153,18 @@ def chunk_sections(
         base_meta["section"] = section.get("section", base_meta.get("section", "Full Document"))
         if section.get("table_id"):
             base_meta["table_id"] = section["table_id"]
-        for idx, text in enumerate(split_text(section.get("text", ""), chunk_size, chunk_overlap)):
-            if len(text.strip()) < 100:
+        section_confidence = float(section.get("section_confidence", 0.0) or 0.0)
+        raw_text = section.get("text", "")
+        for idx, text in enumerate(split_text(raw_text, chunk_size, chunk_overlap)):
+            quality = assess_chunk_quality(text, section=base_meta["section"], section_confidence=section_confidence)
+            if _should_exclude_chunk(base_meta["section"], text, quality):
                 continue
             record = {
                 "doc_id": generate_doc_id(text, {**base_meta, "chunk_index": idx}),
                 "content": text,
                 "chunk_index": idx,
                 **base_meta,
+                **quality,
             }
             output.append(record)
     return output

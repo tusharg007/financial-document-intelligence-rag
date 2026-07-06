@@ -23,18 +23,18 @@
     "metrics": {
       "retrieval_result_count_avg": 5,
       "top_k_ticker_match": 1.0,
-      "expected_section_match": 0.6666666666666666,
+      "expected_section_match": 1.0,
       "expected_form_type_match": 1.0,
-      "keyword_hit_rate": 0.5185185185185185,
-      "citation_coverage": 0.6222222222222222,
+      "keyword_hit_rate": 0.5,
+      "citation_coverage": 0.9259259259259259,
       "source_url_coverage": 1.0,
       "answer_non_empty": 1.0,
       "answer_has_citations": 1.0,
-      "weak_evidence_rate": 0.8333333333333334,
+      "weak_evidence_rate": 0.2222222222222222,
       "no_answer_handling": 1.0,
-      "latency_ms_avg": 9449.668333333333,
-      "latency_ms_p50": 7089.26,
-      "latency_ms_max": 41032.36
+      "latency_ms_avg": 3944.3016666666667,
+      "latency_ms_p50": 3466.14,
+      "latency_ms_max": 13922.97
     }
   },
   "cases": [
@@ -56,49 +56,39 @@
       ],
       "answerable": true,
       "notes": "Core Apple risk-factor question with section filter.",
-      "answer": "Based on the retrieved SEC filings:\n- The Company could also experience a significant increase in payment card transaction costs or lose the ability to process payment cards if it fails to follow payment card industry data security standards, which could materially adversely affect the Company’s business, reputation, results of operations and financial condition. [Source 5]\n- New products, services and technologies may replace or supersede existing offerings and may produce lower revenues and lower profit margins, which can materially adversely impact the Company’s business, results of operations and financial condition. [Source 2]\n- Such endeavors may involve significant risks and uncertainties, including distraction of management from current operations, greater-than-expected liabilities and expenses, economic, poli. [Source 4]\n- While the Company maintains insurance coverage that is intended to address certain aspects of data security risks, such insurance coverage may be insufficient to cover all losses or all types of claims that may arise. [Source 4]",
-      "grounding_status": "weak_evidence",
+      "answer": "Based on the retrieved SEC filings:\n- Such endeavors may involve significant risks and uncertainties, including distraction of management from current operations, greater-than-expected liabilities and expenses, economic, political, legal and regulatory challenges associated with operating in new businesses, regions or countries, inadequate return on capital. [Source 3]\n- The Company’s investments can be negatively affected by changes in liquidity, credit deterioration, financial results, market and economic conditions, political risk, sovereign risk, interest rate fluctuations or other factors. [Source 5]\n- The Company could also experience a significant increase in payment card transaction costs or lose the ability to process payment cards if it fails to follow payment card industry data security standards, which could materially adversely affect the Company’s business, reputation, results of operations and financial condition. [Source 2]\n- While the Company maintains insurance coverage that is intended to address certain aspects of data security risks, such insurance coverage may be insufficient to cover all losses or all types of claims that may arise. [Source 3]",
+      "grounding_status": "grounded_with_warnings",
       "used_provider": "extractive",
       "warnings": [
-        "Primary evidence was too boilerplate-heavy; widened evidence selection by relaxing section while preserving company-level grounding.",
-        "Evidence strength is low; treat the answer as tentative.",
-        "Grounding confidence is below the answerable threshold."
+        "Retrieved evidence only partially matches the specific topic phrasing in the question."
       ],
       "metrics": {
         "retrieval_result_count": 5,
         "top_k_ticker_match": 1.0,
-        "expected_section_match": 0.0,
+        "expected_section_match": 1.0,
         "expected_form_type_match": null,
-        "keyword_hit_rate": 0.0,
-        "citation_coverage": 0.6,
+        "keyword_hit_rate": 0.25,
+        "citation_coverage": 1.0,
         "source_url_coverage": 1.0,
         "answer_non_empty": 1.0,
         "answer_has_citations": 1.0,
-        "weak_evidence_rate": 1.0,
+        "weak_evidence_rate": 0.0,
         "no_answer_handling": null,
-        "latency_ms": 41032.36
+        "latency_ms": 13922.97
       },
-      "keyword_hits": [],
+      "keyword_hits": [
+        "regulatory"
+      ],
       "citations": [
-        {
-          "source_num": 1,
-          "ticker": "AAPL",
-          "company": "Apple Inc.",
-          "form_type": "10-K",
-          "filing_date": "2024-11-01",
-          "section": "Financial Statements",
-          "accession_number": "0000320193-24-000123",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019324000123/aapl-20240928.htm"
-        },
         {
           "source_num": 2,
           "ticker": "AAPL",
           "company": "Apple Inc.",
           "form_type": "10-K",
-          "filing_date": "2024-11-01",
-          "section": "Financial Statements",
-          "accession_number": "0000320193-24-000123",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019324000123/aapl-20240928.htm"
+          "filing_date": "2023-11-03",
+          "section": "Risk Factors",
+          "accession_number": "0000320193-23-000106",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019323000106/aapl-20230930.htm"
         },
         {
           "source_num": 3,
@@ -106,17 +96,7 @@
           "company": "Apple Inc.",
           "form_type": "10-K",
           "filing_date": "2023-11-03",
-          "section": "Financial Statements",
-          "accession_number": "0000320193-23-000106",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019323000106/aapl-20230930.htm"
-        },
-        {
-          "source_num": 4,
-          "ticker": "AAPL",
-          "company": "Apple Inc.",
-          "form_type": "10-K",
-          "filing_date": "2023-11-03",
-          "section": "Financial Statements",
+          "section": "Risk Factors",
           "accession_number": "0000320193-23-000106",
           "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019323000106/aapl-20230930.htm"
         },
@@ -126,17 +106,17 @@
           "company": "Apple Inc.",
           "form_type": "10-K",
           "filing_date": "2023-11-03",
-          "section": "Notes",
+          "section": "Risk Factors",
           "accession_number": "0000320193-23-000106",
           "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019323000106/aapl-20230930.htm"
         }
       ],
       "retrieval_doc_ids": [
-        "8456086bdf9e",
-        "d0f6f6bf3c68",
-        "a9fe3ac810c9",
-        "bc8e63121844",
-        "5f89785abf65"
+        "f2e9ac8a8abb",
+        "d3446d64a8e7",
+        "3d4746bb2c97",
+        "c2a60e84a093",
+        "caf3601fb3eb"
       ]
     },
     {
@@ -157,30 +137,31 @@
       ],
       "answerable": true,
       "notes": "Revenue-oriented Microsoft annual filing question.",
-      "answer": "Based on the retrieved SEC filings:\n- However, due to the integrated structure of our business, certain revenue recognized and costs incurred by one segment may benefit other segments. [Source 1]\n- Revenue from certain contracts is allocated among the segments based on the relative value of the underlying products and services, which can include allocation based on actual prices charged, prices when sold separately, or estimated costs plus a profit margin. [Source 1]\n- We generate revenue by offering a wide range of cloud-based solutions, content, and other services to people and businesses. [Source 2]\n- Highlights from fiscal year 2023 compared with fiscal year 2022 included: • Microsoft Cloud revenue increased 22% to $111.6 billion. [Source 4]",
-      "grounding_status": "weak_evidence",
+      "answer": "Based on the retrieved SEC filings:\n- Windows Commercial revenue, which includes volume licensing of the Windows operating system and Windows cloud services such as Microsoft Defender for Endpoint, is affected mainly by the demand from commercial customers for Microsoft 365 and our advanced security offerings. [Source 5]\n- If customers do not perceive our latest offerings as providing significant new functionality or other value, they may reduce their purchases of new software and hardware products or upgrades, unfavorably affecting revenue. [Source 1]\n- However, due to the integrated structure of our business, certain revenue recognized and costs incurred by one segment may benefit other segments. [Source 2]\n- Revenue from certain contracts is allocated among the segments based on the relative value of the underlying products and services, which can include allocation based on actual prices charged, prices when sold separately, or estimated costs plus a profit margin. [Source 2]",
+      "grounding_status": "grounded_with_warnings",
       "used_provider": "extractive",
       "warnings": [
         "Evidence strength is low; treat the answer as tentative.",
-        "Grounding confidence is below the answerable threshold."
+        "Retrieved evidence only partially matches the specific topic phrasing in the question."
       ],
       "metrics": {
         "retrieval_result_count": 5,
         "top_k_ticker_match": 1.0,
         "expected_section_match": null,
         "expected_form_type_match": 1.0,
-        "keyword_hit_rate": 0.5,
-        "citation_coverage": 0.6,
+        "keyword_hit_rate": 0.75,
+        "citation_coverage": 1.0,
         "source_url_coverage": 1.0,
         "answer_non_empty": 1.0,
         "answer_has_citations": 1.0,
-        "weak_evidence_rate": 1.0,
+        "weak_evidence_rate": 0.0,
         "no_answer_handling": null,
-        "latency_ms": 14523.93
+        "latency_ms": 3352.96
       },
       "keyword_hits": [
         "revenue",
-        "cloud"
+        "cloud",
+        "demand"
       ],
       "citations": [
         {
@@ -189,7 +170,7 @@
           "company": "MICROSOFT CORP",
           "form_type": "10-K",
           "filing_date": "2023-07-27",
-          "section": "Notes",
+          "section": "Financial Statements",
           "accession_number": "0000950170-23-035122",
           "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000095017023035122/msft-20230630.htm"
         },
@@ -198,28 +179,8 @@
           "ticker": "MSFT",
           "company": "MICROSOFT CORP",
           "form_type": "10-K",
-          "filing_date": "2024-07-30",
-          "section": "Notes",
-          "accession_number": "0000950170-24-087843",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000095017024087843/msft-20240630.htm"
-        },
-        {
-          "source_num": 3,
-          "ticker": "MSFT",
-          "company": "MICROSOFT CORP",
-          "form_type": "10-K",
-          "filing_date": "2024-07-30",
-          "section": "Notes",
-          "accession_number": "0000950170-24-087843",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000095017024087843/msft-20240630.htm"
-        },
-        {
-          "source_num": 4,
-          "ticker": "MSFT",
-          "company": "MICROSOFT CORP",
-          "form_type": "10-K",
           "filing_date": "2023-07-27",
-          "section": "Notes",
+          "section": "MD&A",
           "accession_number": "0000950170-23-035122",
           "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000095017023035122/msft-20230630.htm"
         },
@@ -228,18 +189,18 @@
           "ticker": "MSFT",
           "company": "MICROSOFT CORP",
           "form_type": "10-K",
-          "filing_date": "2023-07-27",
-          "section": "Notes",
-          "accession_number": "0000950170-23-035122",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000095017023035122/msft-20230630.htm"
+          "filing_date": "2024-07-30",
+          "section": "Financial Statements",
+          "accession_number": "0000950170-24-087843",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000095017024087843/msft-20240630.htm"
         }
       ],
       "retrieval_doc_ids": [
-        "f9629eab8d71",
-        "277c57249d34",
-        "ccd302fbb1d6",
-        "e7a6633a66db",
-        "877bf559441b"
+        "c84989ab6014",
+        "17e28aa78f28",
+        "7b33ca84f118",
+        "79da79188bca",
+        "add2b6bf7ec1"
       ]
     },
     {
@@ -260,12 +221,11 @@
       ],
       "answerable": true,
       "notes": "Tesla risk factors with section filter.",
-      "answer": "Based on the retrieved SEC filings:\n- Though we continue to see increased interest and adoption of electric vehicles, if the market for electric vehicles in general and Tesla vehicles in particular does not develop as we expect, develops more slowly than we expect, or if demand for our vehicles decreases in our markets or our vehicles compete with each other, our business, prospects, financial condition and operating results may be harmed. [Source 4]\n- In particular, Tesla’s products, business, results of operations, and statements and actions of Tesla and its management are well-publicized by a range of third parties. [Source 3]\n- If we are not successful in managing these risks, our business, financial condition and operating results may be harmed. [Source 1]\n- In regions where we have or will have operations, particularly significant engineering and manufacturing centers, there is strong competition for individuals with skillsets needed for our business, including specialized knowledge of electric vehicles, engineering and electrical and building construction expertise. [Source 1]",
-      "grounding_status": "weak_evidence",
+      "answer": "Based on the retrieved SEC filings:\n- Though we continue to see increased interest and adoption of electric vehicles, if the market for electric vehicles in general and Tesla vehicles in particular does not develop as we expect, develops more slowly than we expect, or if demand for our vehicles decreases in our markets or our vehicles compete with each other, our business, prospects, financial condition and operating results may be harmed. [Source 3]\n- In particular, Tesla’s products, business, results of operations, and statements and actions of Tesla and its management are well-publicized by a range of third parties. [Source 2]\n- If we are not successful in managing these risks, our business, financial condition and operating results may be harmed. [Source 1]\n- In regions where we have or will have operations, particularly significant engineering and manufacturing centers, there is strong competition for individuals with skillsets needed for our business, including specialized knowledge of electric vehicles, engineering and electrical and building construction expertise. [Source 1]",
+      "grounding_status": "grounded_with_warnings",
       "used_provider": "extractive",
       "warnings": [
-        "Evidence strength is low; treat the answer as tentative.",
-        "Grounding confidence is below the answerable threshold."
+        "Retrieved evidence only partially matches the specific topic phrasing in the question."
       ],
       "metrics": {
         "retrieval_result_count": 5,
@@ -273,13 +233,13 @@
         "expected_section_match": 1.0,
         "expected_form_type_match": null,
         "keyword_hit_rate": 0.5,
-        "citation_coverage": 0.6,
+        "citation_coverage": 1.0,
         "source_url_coverage": 1.0,
         "answer_non_empty": 1.0,
         "answer_has_citations": 1.0,
-        "weak_evidence_rate": 1.0,
+        "weak_evidence_rate": 0.0,
         "no_answer_handling": null,
-        "latency_ms": 9982.27
+        "latency_ms": 1916.97
       },
       "keyword_hits": [
         "competition",
@@ -300,11 +260,11 @@
           "source_num": 2,
           "ticker": "TSLA",
           "company": "Tesla, Inc.",
-          "form_type": "10-Q",
-          "filing_date": "2023-10-23",
+          "form_type": "10-K",
+          "filing_date": "2023-01-31",
           "section": "Risk Factors",
-          "accession_number": "0001628280-23-034847",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/1318605/000162828023034847/tsla-20230930.htm"
+          "accession_number": "0000950170-23-001409",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1318605/000095017023001409/tsla-20221231.htm"
         },
         {
           "source_num": 3,
@@ -315,34 +275,14 @@
           "section": "Risk Factors",
           "accession_number": "0000950170-23-001409",
           "source_url": "https://www.sec.gov/Archives/edgar/data/1318605/000095017023001409/tsla-20221231.htm"
-        },
-        {
-          "source_num": 4,
-          "ticker": "TSLA",
-          "company": "Tesla, Inc.",
-          "form_type": "10-K",
-          "filing_date": "2023-01-31",
-          "section": "Risk Factors",
-          "accession_number": "0000950170-23-001409",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/1318605/000095017023001409/tsla-20221231.htm"
-        },
-        {
-          "source_num": 5,
-          "ticker": "TSLA",
-          "company": "Tesla, Inc.",
-          "form_type": "10-Q",
-          "filing_date": "2024-04-24",
-          "section": "Risk Factors",
-          "accession_number": "0001628280-24-017503",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/1318605/000162828024017503/tsla-20240331.htm"
         }
       ],
       "retrieval_doc_ids": [
-        "ee23ab24ee88",
-        "7e7adbb54218",
-        "44249b1b467a",
-        "eeb5f0b89154",
-        "d0e17385e861"
+        "1eed4fee7057",
+        "fe442bb795d7",
+        "2681a2d5ecc1",
+        "8370c53811c3",
+        "fb75ee9930b7"
       ]
     },
     {
@@ -362,90 +302,57 @@
       ],
       "answerable": true,
       "notes": "Broad Nvidia business description.",
-      "answer": "Based on the retrieved SEC filings:\n- As NVIDIA’s business has evolved from a focus primarily on gaming products to broader markets, and from chips to platforms, systems and software, so, too, have our avenues to market. [Source 4]\n- Recent Developments, Future Objectives and Challenges Supply, Products Transitions, and New Products and Business Models Our supply, which includes inventory on hand, purchase obligations and prepaid supply and capacity agreements, has grown significantly due to recent supply chain conditions and long lead times, complexity of our products, and changes in demand. [Source 1]\n- Overview Our Company and Our Businesses Since our founding in 1993, NVIDIA has been a pioneer in accelerated computing. [Source 5]\n- 3, and our Quarterly Reports on Form 10-Q for the fiscal quarters ended April 30, 2023 and July 30, 2023 under the heading “Risk Factors” of such reports, and our Condensed Consolidated Financial Statements and related Notes thereto, as well as other cautionary statements and risks described elsewhere in this Quarterly Report on Form 10-Q and our other filings with the SEC, before deciding to purchase or sell shares of our common stock. [Source 5]",
-      "grounding_status": "weak_evidence",
+      "answer": "Based on the retrieved SEC filings:\n- We are engaged in legal actions not described above arising in the ordinary course of business and, while there can be no assurance of favorable outcomes, we believe that the ultimate outcome of these actions will not have a material adverse effect on our operating results, liquidity or financial position. [Source 4]\n- We assess our programs annually in consideration of stakeholder expectations, market trends, and business risks and opportunities. [Source 3]\n- These issues are important for our continued business success and reflect the topics of highest concern to NVIDIA and our stakeholders. [Source 3]\n- Accounting for Loss Contingencies As of July 30, 2023, we have not recorded any accrual for contingent liabilities associated with the legal proceedings described above based on our belief that liabilities, while possible, are not probable. [Source 4]",
+      "grounding_status": "grounded_with_warnings",
       "used_provider": "extractive",
       "warnings": [
-        "Evidence strength is low; treat the answer as tentative.",
-        "Grounding confidence is below the answerable threshold."
+        "Retrieved evidence only partially matches the specific topic phrasing in the question."
       ],
       "metrics": {
         "retrieval_result_count": 5,
         "top_k_ticker_match": 1.0,
         "expected_section_match": null,
         "expected_form_type_match": null,
-        "keyword_hit_rate": 0.75,
-        "citation_coverage": 0.6,
+        "keyword_hit_rate": 0.25,
+        "citation_coverage": 1.0,
         "source_url_coverage": 1.0,
         "answer_non_empty": 1.0,
         "answer_has_citations": 1.0,
-        "weak_evidence_rate": 1.0,
+        "weak_evidence_rate": 0.0,
         "no_answer_handling": null,
-        "latency_ms": 6937.65
+        "latency_ms": 3549.57
       },
       "keyword_hits": [
-        "business",
-        "platform",
-        "products"
+        "business"
       ],
       "citations": [
-        {
-          "source_num": 1,
-          "ticker": "NVDA",
-          "company": "NVIDIA CORP",
-          "form_type": "10-Q",
-          "filing_date": "2023-05-26",
-          "section": "Risk Factors",
-          "accession_number": "0001045810-23-000093",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581023000093/nvda-20230430.htm"
-        },
-        {
-          "source_num": 2,
-          "ticker": "NVDA",
-          "company": "NVIDIA CORP",
-          "form_type": "10-Q",
-          "filing_date": "2023-08-28",
-          "section": "Risk Factors",
-          "accession_number": "0001045810-23-000175",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581023000175/nvda-20230730.htm"
-        },
         {
           "source_num": 3,
           "ticker": "NVDA",
           "company": "NVIDIA CORP",
-          "form_type": "10-Q",
-          "filing_date": "2023-11-21",
-          "section": "Risk Factors",
-          "accession_number": "0001045810-23-000227",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581023000227/nvda-20231029.htm"
+          "form_type": "10-K",
+          "filing_date": "2023-02-24",
+          "section": "Business",
+          "accession_number": "0001045810-23-000017",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581023000017/nvda-20230129.htm"
         },
         {
           "source_num": 4,
           "ticker": "NVDA",
           "company": "NVIDIA CORP",
-          "form_type": "10-K",
-          "filing_date": "2023-02-24",
-          "section": "Financial Statements",
-          "accession_number": "0001045810-23-000017",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581023000017/nvda-20230129.htm"
-        },
-        {
-          "source_num": 5,
-          "ticker": "NVDA",
-          "company": "NVIDIA CORP",
           "form_type": "10-Q",
-          "filing_date": "2023-11-21",
-          "section": "Risk Factors",
-          "accession_number": "0001045810-23-000227",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581023000227/nvda-20231029.htm"
+          "filing_date": "2023-08-28",
+          "section": "Notes",
+          "accession_number": "0001045810-23-000175",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581023000175/nvda-20230730.htm"
         }
       ],
       "retrieval_doc_ids": [
-        "8bf4c0526f9a",
-        "259b0dc6721c",
-        "ac733137d9c0",
-        "8046ba88bc5c",
-        "1628b106534f"
+        "ca09d565581d",
+        "fb03418ad72f",
+        "f82971e41a72",
+        "ad7b82eb644f",
+        "09c037b9d00f"
       ]
     },
     {
@@ -465,13 +372,11 @@
       ],
       "answerable": true,
       "notes": "JPM broad financial-statement question.",
-      "answer": "Based on the retrieved SEC filings:\n- JPMorgan Chase could recognize unexpected losses, its capital levels could be reduced and it could face greater regulatory scrutiny if its models, estimations or judgments, including those used in its financial statements, prove to be inadequate or incorrect. [Source 2]\n- JPMorgan Chase also uses internal models and estimations as a basis for its stress testing and in connection with the preparation of its financial statements under U.S. [Source 2]\n- These unaudited Consolidated Financial Statements should be read in conjunction with the audited Consolidated Financial Statements, and related notes thereto, included in JPMorgan Chas. [Source 4]\n- These unaudited Consolidated Financial Statements should be read in conjunction with the audited Consolidated Financial Statements, and related notes thereto, included in JPMorgan Chase’s 2022 Form 10-K. [Source 5]",
-      "grounding_status": "weak_evidence",
+      "answer": "Based on the retrieved SEC filings:\n- JPMorgan Chase could recognize unexpected losses, its capital levels could be reduced and it could face greater regulatory scrutiny if its models, estimations or judgments, including those used in its financial statements, prove to be inadequate or incorrect. [Source 5]\n- JPMorgan Chase also uses internal models and estimations as a basis for its stress testing and in connection with the preparation of its financial statements under U.S. [Source 4]\n- JPMorgan Chase has developed and uses a variety of models and other analytical and judgment-based estimations to measure, monitor and implement controls over its market, credit, capital, liquidity, operational and other risks. [Source 4]\n- JPMorgan Chase” or the “Firm”), a financial holding company incorporated under Delaware law in 1968, is a leading financial services firm based in the U.S., with operations worldwide. [Source 1]",
+      "grounding_status": "grounded_with_warnings",
       "used_provider": "extractive",
       "warnings": [
-        "Evidence strength is low; treat the answer as tentative.",
-        "Evidence spans multiple sections; check citations for context.",
-        "Grounding confidence is below the answerable threshold."
+        "Evidence spans multiple sections; check citations for context."
       ],
       "metrics": {
         "retrieval_result_count": 5,
@@ -479,13 +384,13 @@
         "expected_section_match": null,
         "expected_form_type_match": null,
         "keyword_hit_rate": 0.25,
-        "citation_coverage": 0.6,
+        "citation_coverage": 1.0,
         "source_url_coverage": 1.0,
         "answer_non_empty": 1.0,
         "answer_has_citations": 1.0,
-        "weak_evidence_rate": 1.0,
+        "weak_evidence_rate": 0.0,
         "no_answer_handling": null,
-        "latency_ms": 7701.03
+        "latency_ms": 4794.67
       },
       "keyword_hits": [
         "financial"
@@ -495,29 +400,9 @@
           "source_num": 1,
           "ticker": "JPM",
           "company": "JPMORGAN CHASE & CO",
-          "form_type": "10-K",
-          "filing_date": "2023-02-21",
-          "section": "Notes",
-          "accession_number": "0000019617-23-000231",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/19617/000001961723000231/jpm-20221231.htm"
-        },
-        {
-          "source_num": 2,
-          "ticker": "JPM",
-          "company": "JPMORGAN CHASE & CO",
-          "form_type": "10-K",
-          "filing_date": "2023-02-21",
-          "section": "Financial Statements",
-          "accession_number": "0000019617-23-000231",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/19617/000001961723000231/jpm-20221231.htm"
-        },
-        {
-          "source_num": 3,
-          "ticker": "JPM",
-          "company": "JPMORGAN CHASE & CO",
           "form_type": "10-Q",
           "filing_date": "2023-05-03",
-          "section": "Risk Factors",
+          "section": "Notes",
           "accession_number": "0000019617-23-000310",
           "source_url": "https://www.sec.gov/Archives/edgar/data/19617/000001961723000310/jpm-20230331.htm"
         },
@@ -525,29 +410,29 @@
           "source_num": 4,
           "ticker": "JPM",
           "company": "JPMORGAN CHASE & CO",
-          "form_type": "10-Q",
-          "filing_date": "2023-08-03",
+          "form_type": "10-K",
+          "filing_date": "2024-02-16",
           "section": "Risk Factors",
-          "accession_number": "0000019617-23-000432",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/19617/000001961723000432/jpm-20230630.htm"
+          "accession_number": "0000019617-24-000225",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/19617/000001961724000225/jpm-20231231.htm"
         },
         {
           "source_num": 5,
           "ticker": "JPM",
           "company": "JPMORGAN CHASE & CO",
-          "form_type": "10-Q",
-          "filing_date": "2023-11-01",
+          "form_type": "10-K",
+          "filing_date": "2023-02-21",
           "section": "Risk Factors",
-          "accession_number": "0000019617-23-000524",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/19617/000001961723000524/jpm-20230930.htm"
+          "accession_number": "0000019617-23-000231",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/19617/000001961723000231/jpm-20221231.htm"
         }
       ],
       "retrieval_doc_ids": [
-        "83e24526b8f2",
-        "8b5e878f3f23",
-        "ce57f69ce025",
-        "4da5a16f0f41",
-        "e2dc682fe51d"
+        "af7ca5f72e7e",
+        "7288315c2486",
+        "7b0c01f58f9b",
+        "e54e396c00cc",
+        "91dd8dce2bd0"
       ]
     },
     {
@@ -567,90 +452,71 @@
       ],
       "answerable": true,
       "notes": "Comparison question without a single expected ticker.",
-      "answer": "Based on the retrieved SEC filings:\n- Our success depends on our ability to: • timely identify industry changes, adapt our strategies, and develop new or enhance and maintain existing products and technologies that meet the evolving needs of these markets, including due to unexpected changes in industry standards or disruptive technological innovatio. [Source 2]\n- As a result, we increasingly both cooperate and compete with our OEM partners, creating a risk that we fail to do so in compliance with competition rules. [Source 4]\n- Our accelerated computing platforms experience rapid changes in technology, customer requirements, competitive products, and industry standards. [Source 2]\n- If our products and services do not work as intended, are utilized in methods not intended, violate the law, or harm individuals or businesses, we may be subject to legal claims or enforcement actions. [Source 3]",
-      "grounding_status": "weak_evidence",
+      "answer": "Based on the retrieved SEC filings:\n- Quality problems can adversely affect the experience for users of the Company’s products and services, and result in harm to the Company’s reputation, loss of competitive advantage, poor market acceptance, reduced demand for products and services, delay in new product and service introductions and lost sales. [Source 4]\n- The Company’s products and services are offered in highly competitive global markets characterized by aggressive price competition and resulting downward pressure on gross margins, frequent introduction of new products and services, short product life cycles, evolving industry standards, continual improvement in product price and performance characteristics, rapid adoption of technological advancements by competitors, and price sensitivity on the part of consumers and businesses. [Source 2]\n- Our failure to comply with Anti-Corruption Laws or competition laws could result in significant fines and penalties, criminal sanctions against us, our officers, or our employees, prohibitions on the conduct of our business, and damage to our reputation. [Source 3]\n- The Company’s ability to compete successfully depends heavily on ensuring the continuing and timely introduction of innovative new products, services and technologies to the marketplace. [Source 2]",
+      "grounding_status": "grounded_with_warnings",
       "used_provider": "extractive",
       "warnings": [
-        "Evidence strength is low; treat the answer as tentative.",
-        "Grounding confidence is below the answerable threshold."
+        "Evidence spans multiple sections; check citations for context.",
+        "Retrieved evidence only partially matches the specific topic phrasing in the question."
       ],
       "metrics": {
         "retrieval_result_count": 5,
         "top_k_ticker_match": null,
         "expected_section_match": null,
         "expected_form_type_match": null,
-        "keyword_hit_rate": 0.75,
-        "citation_coverage": 0.6,
+        "keyword_hit_rate": 1.0,
+        "citation_coverage": 1.0,
         "source_url_coverage": 1.0,
         "answer_non_empty": 1.0,
         "answer_has_citations": 1.0,
-        "weak_evidence_rate": 1.0,
+        "weak_evidence_rate": 0.0,
         "no_answer_handling": null,
-        "latency_ms": 6981.47
+        "latency_ms": 2934.91
       },
       "keyword_hits": [
         "competition",
         "market",
+        "demand",
         "products"
       ],
       "citations": [
         {
-          "source_num": 1,
+          "source_num": 2,
           "ticker": "AAPL",
           "company": "Apple Inc.",
           "form_type": "10-K",
-          "filing_date": "2023-11-03",
-          "section": "Financial Statements",
-          "accession_number": "0000320193-23-000106",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019323000106/aapl-20230930.htm"
-        },
-        {
-          "source_num": 2,
-          "ticker": "NVDA",
-          "company": "NVIDIA CORP",
-          "form_type": "10-K",
-          "filing_date": "2024-02-21",
-          "section": "Financial Statements",
-          "accession_number": "0001045810-24-000029",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581024000029/nvda-20240128.htm"
+          "filing_date": "2024-11-01",
+          "section": "Risk Factors",
+          "accession_number": "0000320193-24-000123",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019324000123/aapl-20240928.htm"
         },
         {
           "source_num": 3,
           "ticker": "MSFT",
           "company": "MICROSOFT CORP",
           "form_type": "10-K",
-          "filing_date": "2024-07-30",
-          "section": "Notes",
-          "accession_number": "0000950170-24-087843",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000095017024087843/msft-20240630.htm"
+          "filing_date": "2023-07-27",
+          "section": "Financial Statements",
+          "accession_number": "0000950170-23-035122",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000095017023035122/msft-20230630.htm"
         },
         {
           "source_num": 4,
-          "ticker": "MSFT",
-          "company": "MICROSOFT CORP",
+          "ticker": "AAPL",
+          "company": "Apple Inc.",
           "form_type": "10-K",
-          "filing_date": "2024-07-30",
-          "section": "Notes",
-          "accession_number": "0000950170-24-087843",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000095017024087843/msft-20240630.htm"
-        },
-        {
-          "source_num": 5,
-          "ticker": "NVDA",
-          "company": "NVIDIA CORP",
-          "form_type": "10-K",
-          "filing_date": "2023-02-24",
-          "section": "Financial Statements",
-          "accession_number": "0001045810-23-000017",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581023000017/nvda-20230129.htm"
+          "filing_date": "2024-11-01",
+          "section": "Risk Factors",
+          "accession_number": "0000320193-24-000123",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019324000123/aapl-20240928.htm"
         }
       ],
       "retrieval_doc_ids": [
-        "a9fe3ac810c9",
-        "9cff5c26aa42",
-        "cbd1d596583f",
-        "76a837653a09",
-        "350cc694af5d"
+        "c2a60e84a093",
+        "843ae0620bdb",
+        "86c8fa8a2002",
+        "3c4a7cdf4a26",
+        "d21a0de89184"
       ]
     },
     {
@@ -670,30 +536,29 @@
       ],
       "answerable": true,
       "notes": "Company-specific risk theme that may appear outside a strict risk-factor chunk.",
-      "answer": "Based on the retrieved SEC filings:\n- The Company could also experience a significant increase in payment card transaction costs or lose the ability to process payment cards if it fails to follow payment card industry data security standards, which could materially adversely affect the Company’s business, reputation, results of operations and financial condition. [Source 3]\n- Quantitative and Qualitative Disclosures About Market Risk The Company is exposed to economic risk from interest rates and foreign exchange rates. [Source 5]\n- Such endeavors may involve significant risks and uncertainties, including distraction of management from current operations, greater-than-expected liabilities and expenses, economic, poli. [Source 2]\n- For a discussion of the Company’s cybersecurity-related risks, see Item 1A of this Form 10-K under the heading “Risk Factors.” Apple Inc. [Source 1]",
-      "grounding_status": "weak_evidence",
+      "answer": "Based on the retrieved SEC filings:\n- The Company’s enterprise risk management program is designed to identify, asse ss, and monitor the Company’s business risks, including financial, operational, compliance and reputational risks, and reflects management’s assessment of cybersecurity risks. [Source 5]\n- The Audit Committee regularly reviews and discusses the Company’s cybersecurity risks with management, including the Company’s Head of Corporate Information Security, its General Counsel and the Heads of Compliance and Business Conduct, Business Assurance, and Internal Audit, and receives updates, as necessary, regarding cybersecurity incidents. [Source 1]\n- The Audit Committee regularly reviews and discusses the Company’s cybersecurity risks with management, including the Company’s Head of Corporate. [Source 5]\n- Such events can make it difficult or impossible for the Company to manufacture and deliver products to its customers, create delays and inefficiencies in the Company’s supply and manufacturing chain, result in slowdowns and outages to the Company’s service offerings, increase the Company’s costs, and negatively impact consumer spending and demand in affected areas. [Source 4]",
+      "grounding_status": "grounded_with_warnings",
       "used_provider": "extractive",
       "warnings": [
         "Evidence strength is low; treat the answer as tentative.",
-        "Grounding confidence is below the answerable threshold."
+        "Retrieved evidence only partially matches the specific topic phrasing in the question."
       ],
       "metrics": {
         "retrieval_result_count": 5,
         "top_k_ticker_match": 1.0,
         "expected_section_match": null,
         "expected_form_type_match": null,
-        "keyword_hit_rate": 0.75,
-        "citation_coverage": 0.8,
+        "keyword_hit_rate": 0.5,
+        "citation_coverage": 1.0,
         "source_url_coverage": 1.0,
         "answer_non_empty": 1.0,
         "answer_has_citations": 1.0,
-        "weak_evidence_rate": 1.0,
+        "weak_evidence_rate": 0.0,
         "no_answer_handling": null,
-        "latency_ms": 6567.15
+        "latency_ms": 3652.19
       },
       "keyword_hits": [
         "cybersecurity",
-        "data",
         "security"
       ],
       "citations": [
@@ -703,57 +568,37 @@
           "company": "Apple Inc.",
           "form_type": "10-K",
           "filing_date": "2024-11-01",
-          "section": "Financial Statements",
+          "section": "Risk Factors",
           "accession_number": "0000320193-24-000123",
           "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019324000123/aapl-20240928.htm"
-        },
-        {
-          "source_num": 2,
-          "ticker": "AAPL",
-          "company": "Apple Inc.",
-          "form_type": "10-K",
-          "filing_date": "2023-11-03",
-          "section": "Financial Statements",
-          "accession_number": "0000320193-23-000106",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019323000106/aapl-20230930.htm"
-        },
-        {
-          "source_num": 3,
-          "ticker": "AAPL",
-          "company": "Apple Inc.",
-          "form_type": "10-K",
-          "filing_date": "2023-11-03",
-          "section": "Notes",
-          "accession_number": "0000320193-23-000106",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019323000106/aapl-20230930.htm"
         },
         {
           "source_num": 4,
           "ticker": "AAPL",
           "company": "Apple Inc.",
           "form_type": "10-K",
-          "filing_date": "2023-11-03",
-          "section": "Financial Statements",
-          "accession_number": "0000320193-23-000106",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019323000106/aapl-20230930.htm"
+          "filing_date": "2024-11-01",
+          "section": "Risk Factors",
+          "accession_number": "0000320193-24-000123",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019324000123/aapl-20240928.htm"
         },
         {
           "source_num": 5,
           "ticker": "AAPL",
           "company": "Apple Inc.",
           "form_type": "10-K",
-          "filing_date": "2023-11-03",
-          "section": "Notes",
-          "accession_number": "0000320193-23-000106",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019323000106/aapl-20230930.htm"
+          "filing_date": "2024-11-01",
+          "section": "Risk Factors",
+          "accession_number": "0000320193-24-000123",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019324000123/aapl-20240928.htm"
         }
       ],
       "retrieval_doc_ids": [
-        "3ac961403105",
-        "bc8e63121844",
-        "5f89785abf65",
-        "a9fe3ac810c9",
-        "378d039b348e"
+        "7f93b0bf0b0e",
+        "c2a60e84a093",
+        "86b7cb013440",
+        "b1a8de41a12c",
+        "1d3f7227a4b8"
       ]
     },
     {
@@ -773,32 +618,28 @@
       ],
       "answerable": true,
       "notes": "Business/revenue oriented Microsoft question.",
-      "answer": "Based on the retrieved SEC filings:\n- At Microsoft, we push the boundaries of what is possible through a broad range of research and development activities that seek to identify and address the changing demands of customers and users, industry trends, and competitive forces. [Source 3]\n- As with many innovations, AI presents risks and challenges that could affect its adoption, and therefore our business. [Source 1]\n- Economic Conditions, Challenges, and Risks The markets for software, devices, and cloud-based services are dynamic and highly competitive. [Source 3]\n- Our competitors are developing new software and devices, while also deploying competing cloud-based services for consumers and businesses. [Source 3]",
-      "grounding_status": "weak_evidence",
+      "answer": "Based on the retrieved SEC filings:\n- As with many innovations, AI presents risks and challenges that could affect its adoption, and therefore our business. [Source 1]\n- We continue to invest in high performance and sustainable computing to meet the growing demand for fast access to Microsoft services provided by our network of cloud computing and AI infrastructure and datacenters. [Source 4]\n- We continue to invest in high performance and sustainable computing to meet the growing demand for fast access to Microsoft services provided by our network of cloud computing infrastructure and datacenters. [Source 3]\n- Our cloud business benefits from three economies of scale: datacenters that deploy computational resources at significantly lower cost per unit than smaller ones. [Source 3]",
+      "grounding_status": "grounded",
       "used_provider": "extractive",
-      "warnings": [
-        "Evidence strength is low; treat the answer as tentative.",
-        "Grounding confidence is below the answerable threshold."
-      ],
+      "warnings": [],
       "metrics": {
         "retrieval_result_count": 5,
         "top_k_ticker_match": 1.0,
         "expected_section_match": null,
         "expected_form_type_match": null,
-        "keyword_hit_rate": 1.0,
-        "citation_coverage": 0.4,
+        "keyword_hit_rate": 0.75,
+        "citation_coverage": 1.0,
         "source_url_coverage": 1.0,
         "answer_non_empty": 1.0,
         "answer_has_citations": 1.0,
-        "weak_evidence_rate": 1.0,
+        "weak_evidence_rate": 0.0,
         "no_answer_handling": null,
-        "latency_ms": 5047.15
+        "latency_ms": 2616.46
       },
       "keyword_hits": [
         "cloud",
         "ai",
-        "demand",
-        "customers"
+        "demand"
       ],
       "citations": [
         {
@@ -806,58 +647,38 @@
           "ticker": "MSFT",
           "company": "MICROSOFT CORP",
           "form_type": "10-Q",
-          "filing_date": "2023-01-24",
-          "section": "Quantitative and Qualitative Disclosures",
-          "accession_number": "0001564590-23-000733",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000156459023000733/msft-10q_20221231.htm"
-        },
-        {
-          "source_num": 2,
-          "ticker": "MSFT",
-          "company": "MICROSOFT CORP",
-          "form_type": "10-Q",
-          "filing_date": "2023-04-25",
-          "section": "Risk Factors",
-          "accession_number": "0000950170-23-014423",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000095017023014423/msft-20230331.htm"
+          "filing_date": "2023-10-24",
+          "section": "MD&A",
+          "accession_number": "0000950170-23-054855",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000095017023054855/msft-20230930.htm"
         },
         {
           "source_num": 3,
           "ticker": "MSFT",
           "company": "MICROSOFT CORP",
-          "form_type": "10-Q",
-          "filing_date": "2023-10-24",
-          "section": "Risk Factors",
-          "accession_number": "0000950170-23-054855",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000095017023054855/msft-20230930.htm"
+          "form_type": "10-K",
+          "filing_date": "2023-07-27",
+          "section": "Financial Statements",
+          "accession_number": "0000950170-23-035122",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000095017023035122/msft-20230630.htm"
         },
         {
           "source_num": 4,
           "ticker": "MSFT",
           "company": "MICROSOFT CORP",
-          "form_type": "10-Q",
-          "filing_date": "2023-04-25",
-          "section": "Risk Factors",
-          "accession_number": "0000950170-23-014423",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000095017023014423/msft-20230331.htm"
-        },
-        {
-          "source_num": 5,
-          "ticker": "MSFT",
-          "company": "MICROSOFT CORP",
-          "form_type": "10-Q",
-          "filing_date": "2024-01-30",
-          "section": "Risk Factors",
-          "accession_number": "0000950170-24-008814",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000095017024008814/msft-20231231.htm"
+          "form_type": "10-K",
+          "filing_date": "2024-07-30",
+          "section": "Financial Statements",
+          "accession_number": "0000950170-24-087843",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000095017024087843/msft-20240630.htm"
         }
       ],
       "retrieval_doc_ids": [
-        "f13b771349f4",
-        "b04fae6e5db3",
-        "59eac67f951a",
-        "7b4e6c37b3b2",
-        "f741166b9122"
+        "55c9b2a632aa",
+        "18f4d74307b4",
+        "fedcbdae1656",
+        "33a2ffdaa98f",
+        "8583e054ce2d"
       ]
     },
     {
@@ -877,12 +698,11 @@
       ],
       "answerable": true,
       "notes": "Operational risk theme for Tesla.",
-      "answer": "Based on the retrieved SEC filings:\n- In regions where we have or will have operations, particularly significant engineering and manufacturing centers, there is strong competition for individuals with skillsets needed for our business, including specialized knowledge of electric vehicles, engineering and electrical and building construction expertise. [Source 1]\n- Our ability to increase production of our vehicles on a sustained basis, make them affordable globally by accessing local supply chains and workforces and streamline delivery logistics is dependent on the construction and ramp of our current and future factories. [Source 3]\n- The construction of and commencement and ramp of production at these factories are subject to a number of uncertainties inherent in all new manufacturing operations, including ongoing compliance with regulatory requirements, procurement and maintenance of construction, environmental and operational licenses and. [Source 3]\n- If we are not successful in managing these risks, our business, financial condition and operating results may be harmed. [Source 1]",
-      "grounding_status": "weak_evidence",
+      "answer": "Based on the retrieved SEC filings:\n- In regions where we have or will have operations, particularly significant engineering and manufacturing centers, there is strong competition for individuals with skillsets needed for our business, including specialized knowledge of electric vehicles, engineering and electrical and building construction expertise. [Source 1]\n- Our ability to increase production of our vehicles on a sustained basis, make them affordable globally by accessing local supply chains and workforces and streamline delivery logistics is dependent on the construction and ramp of our current and future factories. [Source 3]\n- The construction of and commencement and ramp of production at these factories are subject to a number of uncertainties inherent in all new manufacturing operations, including ongoing compliance with regulatory requirements, procurement and maintenance of construction, environmental and operational. [Source 3]\n- In particular, Tesla’s products, business, results of operations, and statements and actions of Tesla and its management are well-publicized by a range of third parties. [Source 4]",
+      "grounding_status": "grounded_with_warnings",
       "used_provider": "extractive",
       "warnings": [
-        "Evidence strength is low; treat the answer as tentative.",
-        "Grounding confidence is below the answerable threshold."
+        "Evidence strength is low; treat the answer as tentative."
       ],
       "metrics": {
         "retrieval_result_count": 5,
@@ -890,13 +710,13 @@
         "expected_section_match": null,
         "expected_form_type_match": null,
         "keyword_hit_rate": 0.75,
-        "citation_coverage": 0.4,
+        "citation_coverage": 1.0,
         "source_url_coverage": 1.0,
         "answer_non_empty": 1.0,
         "answer_has_citations": 1.0,
-        "weak_evidence_rate": 1.0,
+        "weak_evidence_rate": 0.0,
         "no_answer_handling": null,
-        "latency_ms": 7088.5
+        "latency_ms": 3527.74
       },
       "keyword_hits": [
         "manufacturing",
@@ -906,16 +726,6 @@
       "citations": [
         {
           "source_num": 1,
-          "ticker": "TSLA",
-          "company": "Tesla, Inc.",
-          "form_type": "10-K",
-          "filing_date": "2023-01-31",
-          "section": "Risk Factors",
-          "accession_number": "0000950170-23-001409",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/1318605/000095017023001409/tsla-20221231.htm"
-        },
-        {
-          "source_num": 2,
           "ticker": "TSLA",
           "company": "Tesla, Inc.",
           "form_type": "10-K",
@@ -939,28 +749,18 @@
           "ticker": "TSLA",
           "company": "Tesla, Inc.",
           "form_type": "10-K",
-          "filing_date": "2024-01-29",
-          "section": "Financial Statements",
-          "accession_number": "0001628280-24-002390",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/1318605/000162828024002390/tsla-20231231.htm"
-        },
-        {
-          "source_num": 5,
-          "ticker": "TSLA",
-          "company": "Tesla, Inc.",
-          "form_type": "10-K",
-          "filing_date": "2024-01-29",
-          "section": "Financial Statements",
-          "accession_number": "0001628280-24-002390",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/1318605/000162828024002390/tsla-20231231.htm"
+          "filing_date": "2023-01-31",
+          "section": "Risk Factors",
+          "accession_number": "0000950170-23-001409",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1318605/000095017023001409/tsla-20221231.htm"
         }
       ],
       "retrieval_doc_ids": [
-        "ee23ab24ee88",
-        "8ce2001e3f84",
-        "e3e5db2b64db",
-        "e2e7acada58b",
-        "b721fc73bc6c"
+        "1eed4fee7057",
+        "0078a2db378e",
+        "45db9453e2e1",
+        "fe442bb795d7",
+        "8370c53811c3"
       ]
     },
     {
@@ -981,31 +781,30 @@
       ],
       "answerable": true,
       "notes": "Nvidia product-demand question.",
-      "answer": "Based on the retrieved SEC filings:\n- As a result, excessive or shifting export controls may negatively impact demand for our products and services not only in China, but also in other markets, such as Europe, Latin America, and Southeast Asia. [Source 2]\n- As NVIDIA’s business has evolved from a focus primarily on gaming products to broader markets, and from chips to platforms, systems and software, so, too, have our avenues to market. [Source 1]\n- Our demand estimates for new use cases, applications, and services can be incorrect and create volatility in our revenue or supply levels, and we may not be able to generate significant revenue from these use cases, applications, and services. [Source 4]\n- In addition, based on the production schedules of key customers, some of our products for notebooks and game consoles typically generate stronger revenue in the second and third quarters, and weaker revenue in the fourth and first quarters. [Source 1]",
-      "grounding_status": "weak_evidence",
+      "answer": "Based on the retrieved SEC filings:\n- Fueled by the sustained demand for exceptional 3D graphics and the scale of the gaming market, NVIDIA has leveraged its GPU architecture to create platforms for scientific computing, artificial intelligence, or AI, data science, autonomous vehicles, or AV, robotics, metaverse and 3D internet applications. [Source 1]\n- Recent Developments, Future Objectives and Challenges Supply, Products Transitions, and New Products and Business Models Our supply, which includes inventory on hand, purchase obligations and prepaid supply agreements, has grown significantly due to current supply chain conditions, complexity of our products, and recent reductions in demand. [Source 5]\n- We build technology and introduce products for new and innovative use cases and applications such as our NVIDIA DGX Cloud services, Omniverse platform, LLMs, and generative AI models. [Source 4]\n- Our demand estimates for these use cases and applications can be incorrect and create volatility in our revenue or supply levels, and we may not be able to generate any revenue from these use cases and applications. [Source 2]",
+      "grounding_status": "grounded_with_warnings",
       "used_provider": "extractive",
       "warnings": [
         "Evidence strength is low; treat the answer as tentative.",
-        "Grounding confidence is below the answerable threshold."
+        "Retrieved evidence only partially matches the specific topic phrasing in the question."
       ],
       "metrics": {
         "retrieval_result_count": 5,
         "top_k_ticker_match": 1.0,
         "expected_section_match": null,
         "expected_form_type_match": 1.0,
-        "keyword_hit_rate": 1.0,
-        "citation_coverage": 0.6,
+        "keyword_hit_rate": 0.75,
+        "citation_coverage": 1.0,
         "source_url_coverage": 1.0,
         "answer_non_empty": 1.0,
         "answer_has_citations": 1.0,
-        "weak_evidence_rate": 1.0,
+        "weak_evidence_rate": 0.0,
         "no_answer_handling": null,
-        "latency_ms": 5822.57
+        "latency_ms": 3494.95
       },
       "keyword_hits": [
         "demand",
         "products",
-        "customers",
         "market"
       ],
       "citations": [
@@ -1015,7 +814,7 @@
           "company": "NVIDIA CORP",
           "form_type": "10-K",
           "filing_date": "2023-02-24",
-          "section": "Financial Statements",
+          "section": "Business",
           "accession_number": "0001045810-23-000017",
           "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581023000017/nvda-20230129.htm"
         },
@@ -1024,20 +823,10 @@
           "ticker": "NVDA",
           "company": "NVIDIA CORP",
           "form_type": "10-K",
-          "filing_date": "2024-02-21",
-          "section": "Financial Statements",
-          "accession_number": "0001045810-24-000029",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581024000029/nvda-20240128.htm"
-        },
-        {
-          "source_num": 3,
-          "ticker": "NVDA",
-          "company": "NVIDIA CORP",
-          "form_type": "10-K",
-          "filing_date": "2024-02-21",
-          "section": "Financial Statements",
-          "accession_number": "0001045810-24-000029",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581024000029/nvda-20240128.htm"
+          "filing_date": "2023-02-24",
+          "section": "MD&A",
+          "accession_number": "0001045810-23-000017",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581023000017/nvda-20230129.htm"
         },
         {
           "source_num": 4,
@@ -1055,17 +844,17 @@
           "company": "NVIDIA CORP",
           "form_type": "10-K",
           "filing_date": "2023-02-24",
-          "section": "Financial Statements",
+          "section": "MD&A",
           "accession_number": "0001045810-23-000017",
           "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581023000017/nvda-20230129.htm"
         }
       ],
       "retrieval_doc_ids": [
-        "8046ba88bc5c",
-        "157ddf3efee6",
-        "a14ec4c8d7f3",
-        "7e5e3dee5fff",
-        "18d04b5445d3"
+        "3b4e4b85fa25",
+        "095791446eb3",
+        "b858dcdbfd65",
+        "29e68d089d92",
+        "6c1f0114c87e"
       ]
     },
     {
@@ -1085,31 +874,29 @@
       ],
       "answerable": true,
       "notes": "Banking-risk themed question.",
-      "answer": "Based on the retrieved SEC filings:\n- JPMorgan Chase regularly monitors various segments of its credit and market risk exposures to assess the potential risks of concentration or contagion, but its ability to diversify or hedge its exposure against those risks may be limited. [Source 1]\n- The Firm’s wholesale exposure is managed through loan syndications and participations, loan sales, securitizations, credit derivatives, master netting agreements, collateral and other risk-reduction techniques. [Source 2]\n- If large numbers of consumers subsequently default on their loans, whether due to weak credit profiles, an economic downturn or other factors, this could impair their ability to repay obligations owed to JPMorgan Chase and result in higher charge-offs and other credit-related losses. [Source 4]\n- These conditions could also heighten concerns about the ability of customers of JPMorgan Chase’s consumer businesses who live in those areas or work in those affected industries or related or dependent industries to meet their obligations to JPMorgan Chase. [Source 1]",
-      "grounding_status": "weak_evidence",
+      "answer": "Based on the retrieved SEC filings:\n- This type of interrelationship could exacerbate JPMorgan Chase’s credit, liquidity and market risk exposure and potentially cause it to incur losses, including fair value losses in its market-making businesses and investment portfolios. [Source 5]\n- These consequences can also impair JPMorgan Chase’s ability to effectively manage its credit risk exposure from its market activities, or cause harm to JPMorgan Chase’s reputation. [Source 4]\n- JPMorgan Chase regularly monitors various segments of its credit and market risk exposures to assess the potential risks of concentration or contagion, but its ability to diversify or hedge its exposure against those risks may be limited. [Source 1]\n- JPMorgan Chase’s risk management and monitoring processes, including its stress testing framework, seek to quantify and manage JPMorgan Chase’s exposure to more extreme market moves. [Source 3]",
+      "grounding_status": "grounded_with_warnings",
       "used_provider": "extractive",
       "warnings": [
         "Evidence strength is low; treat the answer as tentative.",
-        "Evidence spans multiple sections; check citations for context.",
-        "Grounding confidence is below the answerable threshold."
+        "Retrieved evidence only partially matches the specific topic phrasing in the question."
       ],
       "metrics": {
         "retrieval_result_count": 5,
         "top_k_ticker_match": 1.0,
         "expected_section_match": null,
         "expected_form_type_match": null,
-        "keyword_hit_rate": 1.0,
-        "citation_coverage": 0.6,
+        "keyword_hit_rate": 0.75,
+        "citation_coverage": 1.0,
         "source_url_coverage": 1.0,
         "answer_non_empty": 1.0,
         "answer_has_citations": 1.0,
-        "weak_evidence_rate": 1.0,
+        "weak_evidence_rate": 0.0,
         "no_answer_handling": null,
-        "latency_ms": 7504.79
+        "latency_ms": 3436.93
       },
       "keyword_hits": [
         "credit",
-        "loan",
         "exposure",
         "risk"
       ],
@@ -1120,17 +907,7 @@
           "company": "JPMORGAN CHASE & CO",
           "form_type": "10-K",
           "filing_date": "2024-02-16",
-          "section": "Financial Statements",
-          "accession_number": "0000019617-24-000225",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/19617/000001961724000225/jpm-20231231.htm"
-        },
-        {
-          "source_num": 2,
-          "ticker": "JPM",
-          "company": "JPMORGAN CHASE & CO",
-          "form_type": "10-K",
-          "filing_date": "2024-02-16",
-          "section": "Notes",
+          "section": "Risk Factors",
           "accession_number": "0000019617-24-000225",
           "source_url": "https://www.sec.gov/Archives/edgar/data/19617/000001961724000225/jpm-20231231.htm"
         },
@@ -1140,7 +917,7 @@
           "company": "JPMORGAN CHASE & CO",
           "form_type": "10-K",
           "filing_date": "2023-02-21",
-          "section": "Notes",
+          "section": "Risk Factors",
           "accession_number": "0000019617-23-000231",
           "source_url": "https://www.sec.gov/Archives/edgar/data/19617/000001961723000231/jpm-20221231.htm"
         },
@@ -1150,7 +927,7 @@
           "company": "JPMORGAN CHASE & CO",
           "form_type": "10-K",
           "filing_date": "2023-02-21",
-          "section": "Financial Statements",
+          "section": "Risk Factors",
           "accession_number": "0000019617-23-000231",
           "source_url": "https://www.sec.gov/Archives/edgar/data/19617/000001961723000231/jpm-20221231.htm"
         },
@@ -1158,19 +935,19 @@
           "source_num": 5,
           "ticker": "JPM",
           "company": "JPMORGAN CHASE & CO",
-          "form_type": "10-Q",
-          "filing_date": "2024-05-01",
+          "form_type": "10-K",
+          "filing_date": "2023-02-21",
           "section": "Risk Factors",
-          "accession_number": "0000019617-24-000326",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/19617/000001961724000326/jpm-20240331.htm"
+          "accession_number": "0000019617-23-000231",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/19617/000001961723000231/jpm-20221231.htm"
         }
       ],
       "retrieval_doc_ids": [
-        "7c15b66c869e",
-        "e87ec1791be2",
-        "a0a7fe137cf6",
-        "26f77c2f9d32",
-        "c2108fe018a0"
+        "c18177fc6b02",
+        "83a9c97b1f9b",
+        "f3568ffb4c46",
+        "0defd023d560",
+        "7a86c7d6698c"
       ]
     },
     {
@@ -1191,88 +968,69 @@
       ],
       "answerable": true,
       "notes": "Year-specific annual Apple question tied to the available 2024 filing.",
-      "answer": "Based on the retrieved SEC filings:\n- These attacks seek to compromise the confidentiality, integrity or availability of confidential information or disrupt normal business operations, and can, among other things, impair the Company’s ability to attract and retain customers for its products and services, impact the Company’s stock price, materially damage commercial relationships, and expose the Company to litigation or government investigations, which can result in penalties, fines or judgments against the Company. [Source 2]\n- The Company could also experience a significant increase in payment card transaction costs or lose the ability to process payment cards if it fails to follow payment card industry data security standards, which could materially adversely affect the Company’s business, reputation, results of operations and financial condition. [Source 4]\n- New products, services and technologies may replace or supersede existing offerings and may produce lower revenues and lower profit margins, which can materially adversely impact the Company’s business, results of operations and financial condition. [Source 3]\n- As a result, the Company’s products could be banned, delayed or prohibited from importation, which could materially adversely affect the Company’s business, reputation, results of operations and financial condition. [Source 5]",
-      "grounding_status": "weak_evidence",
+      "answer": "Based on the retrieved SEC filings:\n- Such endeavors may involve significant risks and uncertainties, including distraction of management from current operations, greater-than-expected liabilities and expenses, economic, political, legal and regulatory challenges associated with operating in new businesses, regions or countries, inadequate return on capital. [Source 2]\n- These attacks seek to compromise the confidentiality, integrity or availability of confidential information or disrupt normal business operations, and can, among other things, impair the Company’s ability to attract and retain customers for its products and services, impact the Company’s stock price, materially damage commercial relationships, and expose the Company to litigation or government investigations, which can result in penalties, fines or judgments against the Company. [Source 4]\n- The Company could also experience a significant increase in payment card transaction costs or lose the ability to process payment cards if it fails to follow payment card industry data security standards, which could materially adversely affect the Company’s business, reputation, results of operations and financial condition. [Source 3]\n- Such incidents and other malicious attacks could materially adversely affect the Company’s business, reputation, results of operations and financial condition. [Source 4]",
+      "grounding_status": "grounded_with_warnings",
       "used_provider": "extractive",
       "warnings": [
         "Evidence strength is low; treat the answer as tentative.",
-        "Grounding confidence is below the answerable threshold."
+        "Retrieved evidence only partially matches the specific topic phrasing in the question."
       ],
       "metrics": {
         "retrieval_result_count": 5,
         "top_k_ticker_match": 1.0,
         "expected_section_match": null,
         "expected_form_type_match": 1.0,
-        "keyword_hit_rate": 0.25,
-        "citation_coverage": 0.8,
+        "keyword_hit_rate": 0.5,
+        "citation_coverage": 1.0,
         "source_url_coverage": 1.0,
         "answer_non_empty": 1.0,
         "answer_has_citations": 1.0,
-        "weak_evidence_rate": 1.0,
+        "weak_evidence_rate": 0.0,
         "no_answer_handling": null,
-        "latency_ms": 6427.37
+        "latency_ms": 2882.1
       },
       "keyword_hits": [
-        "products"
+        "products",
+        "regulatory"
       ],
       "citations": [
-        {
-          "source_num": 1,
-          "ticker": "AAPL",
-          "company": "Apple Inc.",
-          "form_type": "10-K",
-          "filing_date": "2024-11-01",
-          "section": "Financial Statements",
-          "accession_number": "0000320193-24-000123",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019324000123/aapl-20240928.htm"
-        },
         {
           "source_num": 2,
           "ticker": "AAPL",
           "company": "Apple Inc.",
           "form_type": "10-K",
-          "filing_date": "2024-11-01",
-          "section": "Financial Statements",
-          "accession_number": "0000320193-24-000123",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019324000123/aapl-20240928.htm"
+          "filing_date": "2023-11-03",
+          "section": "Risk Factors",
+          "accession_number": "0000320193-23-000106",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019323000106/aapl-20230930.htm"
         },
         {
           "source_num": 3,
           "ticker": "AAPL",
           "company": "Apple Inc.",
           "form_type": "10-K",
-          "filing_date": "2024-11-01",
-          "section": "Financial Statements",
-          "accession_number": "0000320193-24-000123",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019324000123/aapl-20240928.htm"
+          "filing_date": "2023-11-03",
+          "section": "Risk Factors",
+          "accession_number": "0000320193-23-000106",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019323000106/aapl-20230930.htm"
         },
         {
           "source_num": 4,
           "ticker": "AAPL",
           "company": "Apple Inc.",
           "form_type": "10-K",
-          "filing_date": "2023-11-03",
-          "section": "Notes",
-          "accession_number": "0000320193-23-000106",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019323000106/aapl-20230930.htm"
-        },
-        {
-          "source_num": 5,
-          "ticker": "AAPL",
-          "company": "Apple Inc.",
-          "form_type": "10-K",
           "filing_date": "2024-11-01",
-          "section": "Financial Statements",
+          "section": "Risk Factors",
           "accession_number": "0000320193-24-000123",
           "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019324000123/aapl-20240928.htm"
         }
       ],
       "retrieval_doc_ids": [
-        "8456086bdf9e",
-        "5373972d081c",
-        "d0f6f6bf3c68",
-        "5f89785abf65",
-        "f2e0081ee926"
+        "f2e9ac8a8abb",
+        "3d4746bb2c97",
+        "d3446d64a8e7",
+        "886f43652e9c",
+        "da46da41b105"
       ]
     },
     {
@@ -1293,11 +1051,12 @@
       ],
       "answerable": true,
       "notes": "Temporal annual Microsoft revenue question.",
-      "answer": "Based on the retrieved SEC filings:\n- Highlights from fiscal year 2023 compared with fiscal year 2022 included: • Microsoft Cloud revenue increased 22% to $111.6 billion. [Source 2]\n- Highlights from fiscal year 2024 compared with fiscal year 2023 included: • Microsoft Cloud revenue increased 23% to $137.4 billion. [Source 3]\n- Segments Fiscal Year 2024 Compared with Fiscal Year 2023 Productivity and Business Processes Revenue increased $8.5 billion or 12%. [Source 5]\n- We are creating the platforms and tools, powered by artificial intelligence (“AI”), that deliver better, faster, and more effective solutions to support small and large business competitiveness, improve educa. [Source 4]",
-      "grounding_status": "weak_evidence",
+      "answer": "I do not have enough grounded evidence in the indexed filings to answer confidently. The retrieved filings only partially match the topic phrasing in the question and do not answer it directly. [Source 2] [Source 3]",
+      "grounding_status": "insufficient_evidence",
       "used_provider": "extractive",
       "warnings": [
         "Evidence strength is low; treat the answer as tentative.",
+        "Retrieved evidence only partially matches the specific topic phrasing in the question.",
         "Grounding confidence is below the answerable threshold."
       ],
       "metrics": {
@@ -1305,36 +1064,24 @@
         "top_k_ticker_match": 1.0,
         "expected_section_match": null,
         "expected_form_type_match": 1.0,
-        "keyword_hit_rate": 0.25,
-        "citation_coverage": 0.8,
+        "keyword_hit_rate": 0.0,
+        "citation_coverage": 0.6666666666666666,
         "source_url_coverage": 1.0,
         "answer_non_empty": 1.0,
         "answer_has_citations": 1.0,
         "weak_evidence_rate": 1.0,
         "no_answer_handling": null,
-        "latency_ms": 10069.97
+        "latency_ms": 3736.94
       },
-      "keyword_hits": [
-        "revenue"
-      ],
+      "keyword_hits": [],
       "citations": [
-        {
-          "source_num": 1,
-          "ticker": "MSFT",
-          "company": "MICROSOFT CORP",
-          "form_type": "10-K",
-          "filing_date": "2024-07-30",
-          "section": "Notes",
-          "accession_number": "0000950170-24-087843",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000095017024087843/msft-20240630.htm"
-        },
         {
           "source_num": 2,
           "ticker": "MSFT",
           "company": "MICROSOFT CORP",
           "form_type": "10-K",
           "filing_date": "2023-07-27",
-          "section": "Notes",
+          "section": "MD&A",
           "accession_number": "0000950170-23-035122",
           "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000095017023035122/msft-20230630.htm"
         },
@@ -1343,38 +1090,28 @@
           "ticker": "MSFT",
           "company": "MICROSOFT CORP",
           "form_type": "10-K",
-          "filing_date": "2024-07-30",
-          "section": "Notes",
-          "accession_number": "0000950170-24-087843",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000095017024087843/msft-20240630.htm"
+          "filing_date": "2023-07-27",
+          "section": "MD&A",
+          "accession_number": "0000950170-23-035122",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000095017023035122/msft-20230630.htm"
         },
         {
           "source_num": 4,
           "ticker": "MSFT",
           "company": "MICROSOFT CORP",
           "form_type": "10-K",
-          "filing_date": "2023-07-27",
-          "section": "Notes",
-          "accession_number": "0000950170-23-035122",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000095017023035122/msft-20230630.htm"
-        },
-        {
-          "source_num": 5,
-          "ticker": "MSFT",
-          "company": "MICROSOFT CORP",
-          "form_type": "10-K",
           "filing_date": "2024-07-30",
-          "section": "Notes",
+          "section": "MD&A",
           "accession_number": "0000950170-24-087843",
           "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000095017024087843/msft-20240630.htm"
         }
       ],
       "retrieval_doc_ids": [
-        "277c57249d34",
-        "e7a6633a66db",
-        "c249bcf7ab44",
-        "edef6b5e5eeb",
-        "506ae519cbaa"
+        "a47b7b5129d5",
+        "7ce22adcc1da",
+        "6b17cab47878",
+        "37071ad93d5b",
+        "88240af54ea2"
       ]
     },
     {
@@ -1394,67 +1131,59 @@
       ],
       "answerable": true,
       "notes": "Temporal Tesla operational-risk question.",
-      "answer": "Based on the retrieved SEC filings:\n- We are also subject to various other legal proceedings, risks and claims that arise from the normal course of business activities. [Source 1]\n- 23 We are also subject to various other legal proceedings, risks and claims that arise from the normal course of business activities. [Source 3]\n- 89 We are also subject to various other legal proceedings, risks and claims that arise from the normal course of business activities. [Source 4]\n- Should the government decide to pursue an enforcement action, there exists the possibility of a material adverse impact on our business, results of operation, prospects, cash flows, financial position or brand. [Source 3]",
+      "answer": "Based on the retrieved SEC filings:\n- If an unfavorable ruling or development were to occur in these or other possible legal proceedings, risks and claims, there exists the possibility of a material adverse impact on our business, results of operations, prospects, cash flows, financial position or brand. [Source 1]\n- Legal Proceedings Litigation Relating to 2018 CEO Performance Award On June 4, 2018, a purported Tesla stockholder filed a putative class and derivative action in the Delaware Court of Chancery against Elon Musk and the members of Tesla’s board of directors as then constituted, alleging corporate waste, unjust enrichment and that such board members breached their fiduciary duties by approving the stock-based compensation plan awarded to Elon Musk in 2018 (the “2018 CEO Performance Award”). [Source 3]\n- The complaint alleges that the defendants made material misrepresentations and omissions about the Company’s Autopilot and FSD Capability technologies and seeks money damages and other relief on behalf of persons who purchased Tesla stock between February 19, 2019, and February 17, 2023. [Source 5]\n- Musk and the other director defendants, joined by Tesla, filed a brief seeking to revise the Court’s January 30, 2024 opinion, and a hearing is scheduled for August 2, 2024. [Source 4]",
       "grounding_status": "grounded_with_warnings",
       "used_provider": "extractive",
       "warnings": [
-        "Evidence strength is low; treat the answer as tentative."
+        "Retrieved evidence only partially matches the specific topic phrasing in the question."
       ],
       "metrics": {
         "retrieval_result_count": 5,
         "top_k_ticker_match": 1.0,
         "expected_section_match": null,
         "expected_form_type_match": null,
-        "keyword_hit_rate": 0.0,
-        "citation_coverage": 0.6,
+        "keyword_hit_rate": 0.25,
+        "citation_coverage": 1.0,
         "source_url_coverage": 1.0,
         "answer_non_empty": 1.0,
         "answer_has_citations": 1.0,
         "weak_evidence_rate": 0.0,
         "no_answer_handling": null,
-        "latency_ms": 7782.78
+        "latency_ms": 3526.82
       },
-      "keyword_hits": [],
+      "keyword_hits": [
+        "operations"
+      ],
       "citations": [
         {
           "source_num": 1,
           "ticker": "TSLA",
           "company": "Tesla, Inc.",
           "form_type": "10-Q",
-          "filing_date": "2024-04-24",
-          "section": "Risk Factors",
-          "accession_number": "0001628280-24-017503",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/1318605/000162828024017503/tsla-20240331.htm"
-        },
-        {
-          "source_num": 2,
-          "ticker": "TSLA",
-          "company": "Tesla, Inc.",
-          "form_type": "10-Q",
-          "filing_date": "2023-10-23",
-          "section": "Risk Factors",
-          "accession_number": "0001628280-23-034847",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/1318605/000162828023034847/tsla-20230930.htm"
+          "filing_date": "2024-10-24",
+          "section": "Notes",
+          "accession_number": "0001628280-24-043486",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1318605/000162828024043486/tsla-20240930.htm"
         },
         {
           "source_num": 3,
           "ticker": "TSLA",
           "company": "Tesla, Inc.",
           "form_type": "10-Q",
-          "filing_date": "2024-07-24",
-          "section": "Risk Factors",
-          "accession_number": "0001628280-24-032662",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/1318605/000162828024032662/tsla-20240630.htm"
+          "filing_date": "2024-04-24",
+          "section": "Notes",
+          "accession_number": "0001628280-24-017503",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1318605/000162828024017503/tsla-20240331.htm"
         },
         {
           "source_num": 4,
           "ticker": "TSLA",
           "company": "Tesla, Inc.",
-          "form_type": "10-K",
-          "filing_date": "2024-01-29",
+          "form_type": "10-Q",
+          "filing_date": "2024-07-24",
           "section": "Notes",
-          "accession_number": "0001628280-24-002390",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/1318605/000162828024002390/tsla-20231231.htm"
+          "accession_number": "0001628280-24-032662",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1318605/000162828024032662/tsla-20240630.htm"
         },
         {
           "source_num": 5,
@@ -1462,17 +1191,17 @@
           "company": "Tesla, Inc.",
           "form_type": "10-Q",
           "filing_date": "2024-10-24",
-          "section": "Risk Factors",
+          "section": "Notes",
           "accession_number": "0001628280-24-043486",
           "source_url": "https://www.sec.gov/Archives/edgar/data/1318605/000162828024043486/tsla-20240930.htm"
         }
       ],
       "retrieval_doc_ids": [
-        "d0e17385e861",
-        "7e7adbb54218",
-        "7759a9468b86",
-        "a51467fc1647",
-        "4e468e183c28"
+        "4132e0442f6a",
+        "94b7d8a0cefe",
+        "8d542d0a0388",
+        "cf415ba53b31",
+        "cde4463a50a2"
       ]
     },
     {
@@ -1492,12 +1221,11 @@
       ],
       "answerable": true,
       "notes": "Cross-company comparison without a single expected ticker.",
-      "answer": "Based on the retrieved SEC filings:\n- The Company could also be subject to unexpected developments, such as lower-than-anticipated demand for the Company’s products or services, issues with new product or service introductions, information technology system failures or network disruptions, or failure of one of the Company’s logistics, supply or manufacturing partners. [Source 4]\n- New products, services and technologies may replace or supersede existing offerings and may produce lower revenues and lower profit margins, which can materially adversely impact the Company’s business, results of operations and financial condition. [Source 1]\n- As a result, excessive or shifting export controls may negatively impact demand for our products and services not only in China, but also in other markets, such as Europe, Latin America, and Southeast Asia. [Source 5]\n- Our demand estimates for new use cases, applications, and services can be incorrect and create volatility in our revenue or supply levels, and we may not be able to generate significant revenue. [Source 3]",
-      "grounding_status": "weak_evidence",
+      "answer": "Based on the retrieved SEC filings:\n- The success of new product and service introductions depends on a number of factors, including timely and successful development, market acceptance, the Company’s ability to manage the risks associated with new technologies and production ramp-up issues, the availability of application software or other third-party support for the Company’s products and services, the effective management of purchase commitments and inventory levels in line with anticipated product demand, the availability of products in appropriate quantities and at expected costs to meet anticipated demand, and the risk that new products and services may have quality or other defects or deficiencies. [Source 4]\n- The Company could also be subject to unexpected developments, such as lower-than-anticipated demand for the Company’s products or services, issues with new product or service introductions, information technology system failures or network disruptions, or failure of one of the Company’s logistics, supply or manufacturing partners. [Source 2]\n- New products, services and technologies may replace or supersede existing offerings and may produce lower revenues and lower profit margins, which can materially adversely impact the Company’s business, results of operations and financial condition. [Source 4]\n- The Company could also experience a significant increase in payment card transaction costs or lose the ability to process payment cards if it fails to follow payment card industry data security standards, which could materially adversely affect the Company’s business, reputation, results of operations and financial condition. [Source 5]",
+      "grounding_status": "grounded_with_warnings",
       "used_provider": "extractive",
       "warnings": [
-        "Evidence strength is low; treat the answer as tentative.",
-        "Grounding confidence is below the answerable threshold."
+        "Evidence strength is low; treat the answer as tentative."
       ],
       "metrics": {
         "retrieval_result_count": 5,
@@ -1505,13 +1233,13 @@
         "expected_section_match": null,
         "expected_form_type_match": null,
         "keyword_hit_rate": 0.75,
-        "citation_coverage": 0.8,
+        "citation_coverage": 1.0,
         "source_url_coverage": 1.0,
         "answer_non_empty": 1.0,
         "answer_has_citations": 1.0,
-        "weak_evidence_rate": 1.0,
+        "weak_evidence_rate": 0.0,
         "no_answer_handling": null,
-        "latency_ms": 6109.88
+        "latency_ms": 2644.1
       },
       "keyword_hits": [
         "demand",
@@ -1520,34 +1248,14 @@
       ],
       "citations": [
         {
-          "source_num": 1,
-          "ticker": "AAPL",
-          "company": "Apple Inc.",
-          "form_type": "10-K",
-          "filing_date": "2024-11-01",
-          "section": "Financial Statements",
-          "accession_number": "0000320193-24-000123",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019324000123/aapl-20240928.htm"
-        },
-        {
           "source_num": 2,
           "ticker": "AAPL",
           "company": "Apple Inc.",
           "form_type": "10-K",
-          "filing_date": "2023-11-03",
-          "section": "Financial Statements",
-          "accession_number": "0000320193-23-000106",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019323000106/aapl-20230930.htm"
-        },
-        {
-          "source_num": 3,
-          "ticker": "NVDA",
-          "company": "NVIDIA CORP",
-          "form_type": "10-K",
-          "filing_date": "2024-02-21",
-          "section": "Financial Statements",
-          "accession_number": "0001045810-24-000029",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581024000029/nvda-20240128.htm"
+          "filing_date": "2024-11-01",
+          "section": "Risk Factors",
+          "accession_number": "0000320193-24-000123",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019324000123/aapl-20240928.htm"
         },
         {
           "source_num": 4,
@@ -1555,27 +1263,27 @@
           "company": "Apple Inc.",
           "form_type": "10-K",
           "filing_date": "2024-11-01",
-          "section": "Financial Statements",
+          "section": "Risk Factors",
           "accession_number": "0000320193-24-000123",
           "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019324000123/aapl-20240928.htm"
         },
         {
           "source_num": 5,
-          "ticker": "NVDA",
-          "company": "NVIDIA CORP",
+          "ticker": "AAPL",
+          "company": "Apple Inc.",
           "form_type": "10-K",
-          "filing_date": "2024-02-21",
-          "section": "Financial Statements",
-          "accession_number": "0001045810-24-000029",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581024000029/nvda-20240128.htm"
+          "filing_date": "2023-11-03",
+          "section": "Risk Factors",
+          "accession_number": "0000320193-23-000106",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019323000106/aapl-20230930.htm"
         }
       ],
       "retrieval_doc_ids": [
-        "d0f6f6bf3c68",
-        "a9fe3ac810c9",
-        "615394b9643c",
-        "d419f52a939b",
-        "157ddf3efee6"
+        "c2a60e84a093",
+        "af16f082b46e",
+        "ff0f3ffa2cca",
+        "3e24bcecb50a",
+        "d3446d64a8e7"
       ]
     },
     {
@@ -1593,11 +1301,13 @@
       ],
       "answerable": false,
       "notes": "Out-of-range year; the indexed SEC dataset begins in 2022.",
-      "answer": "Based on the retrieved SEC filings:\n- Macroeconomic Conditions Macroeconomic conditions, including inflation, changes in interest rates, and currency fluctuations, have directly and indirectly impacted, and could in the future materially impact, the Company’s results of operations and financial condition. [Source 3]\n- The COVID-19 pandemic and the measures taken by many countries in response have affected and could in the future materially impact the Company’s business, results of operations and financial condition. [Source 1]\n- During the second quarter of 2023, the Company announced the following new products: • MacBook Pro ® 14” and MacBook Pro 16”, powered by the Apple M2 Pro and M2 Max chip. [Source 4]\n- 2) Wearables, Home and Accessories net sales include sales of AirPods ® , Apple TV. [Source 2]",
-      "grounding_status": "weak_evidence",
+      "answer": "I do not have enough grounded evidence in the indexed filings to answer confidently. The question asks about a filing year that is outside the indexed SEC corpus. [Source 1] [Source 2]",
+      "grounding_status": "insufficient_evidence",
       "used_provider": "extractive",
       "warnings": [
         "Evidence strength is low; treat the answer as tentative.",
+        "The query mentions a filing year that does not match the cited evidence.",
+        "Retrieved evidence only partially matches the specific topic phrasing in the question.",
         "Grounding confidence is below the answerable threshold."
       ],
       "metrics": {
@@ -1606,13 +1316,13 @@
         "expected_section_match": 1.0,
         "expected_form_type_match": null,
         "keyword_hit_rate": 0.0,
-        "citation_coverage": 0.8,
+        "citation_coverage": 0.5,
         "source_url_coverage": 1.0,
         "answer_non_empty": 1.0,
         "answer_has_citations": 1.0,
         "weak_evidence_rate": 1.0,
         "no_answer_handling": 1.0,
-        "latency_ms": 5610.0
+        "latency_ms": 2436.86
       },
       "keyword_hits": [],
       "citations": [
@@ -1620,59 +1330,49 @@
           "source_num": 1,
           "ticker": "AAPL",
           "company": "Apple Inc.",
-          "form_type": "10-Q",
-          "filing_date": "2023-02-03",
+          "form_type": "10-K",
+          "filing_date": "2024-11-01",
           "section": "Risk Factors",
-          "accession_number": "0000320193-23-000006",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019323000006/aapl-20221231.htm"
+          "accession_number": "0000320193-24-000123",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019324000123/aapl-20240928.htm"
         },
         {
           "source_num": 2,
           "ticker": "AAPL",
           "company": "Apple Inc.",
-          "form_type": "10-Q",
-          "filing_date": "2023-02-03",
+          "form_type": "10-K",
+          "filing_date": "2023-11-03",
           "section": "Risk Factors",
-          "accession_number": "0000320193-23-000006",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019323000006/aapl-20221231.htm"
-        },
-        {
-          "source_num": 3,
-          "ticker": "AAPL",
-          "company": "Apple Inc.",
-          "form_type": "10-Q",
-          "filing_date": "2023-08-04",
-          "section": "Risk Factors",
-          "accession_number": "0000320193-23-000077",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019323000077/aapl-20230701.htm"
+          "accession_number": "0000320193-23-000106",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019323000106/aapl-20230930.htm"
         },
         {
           "source_num": 4,
           "ticker": "AAPL",
           "company": "Apple Inc.",
-          "form_type": "10-Q",
-          "filing_date": "2023-05-05",
+          "form_type": "10-K",
+          "filing_date": "2024-11-01",
           "section": "Risk Factors",
-          "accession_number": "0000320193-23-000064",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019323000064/aapl-20230401.htm"
+          "accession_number": "0000320193-24-000123",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019324000123/aapl-20240928.htm"
         },
         {
           "source_num": 5,
           "ticker": "AAPL",
           "company": "Apple Inc.",
-          "form_type": "10-Q",
-          "filing_date": "2024-08-02",
+          "form_type": "10-K",
+          "filing_date": "2023-11-03",
           "section": "Risk Factors",
-          "accession_number": "0000320193-24-000081",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019324000081/aapl-20240629.htm"
+          "accession_number": "0000320193-23-000106",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019323000106/aapl-20230930.htm"
         }
       ],
       "retrieval_doc_ids": [
-        "7e140dc5b317",
-        "3ae41458e527",
-        "2f06b92464c5",
-        "8995afd41417",
-        "3d7f4b4173b0"
+        "f2e9ac8a8abb",
+        "d3446d64a8e7",
+        "c2a60e84a093",
+        "7f93b0bf0b0e",
+        "caf3601fb3eb"
       ]
     },
     {
@@ -1691,87 +1391,56 @@
       ],
       "answerable": false,
       "notes": "Intentionally unsupported topic to test honest no-answer handling.",
-      "answer": "Based on the retrieved SEC filings:\n- JPMorgan Chase believes, based upon its current knowledge and after consultation with counsel, consideration of the material legal proceedings described above and after taking into account its current litigation reserves and its estimated aggregate range of possible losses, that the other legal proceedings currently pending against it should not have a material adverse effect on the Firm’s consolidated financial condition. [Source 1]\n- The Firm notes, however, that in light of the uncertainties involved in such proceedings, there is no assurance that the ultimate resolution of these matters will not significantly exceed the reserves it has currently accrued or that a matter will not have material reputational consequences. [Source 1]\n- As a result, the outcome of a particular matter may be material to JPMorgan Chase’s operating results for a particular period, depending on, among other factors, the size of the loss or liability imposed and. [Source 1]\n- As a result, the outcome of a particular matter may be material to JPMorgan Chase’s operating results for a particular period, depending on, among other factors, the size of the loss or liability imp. [Source 2]",
-      "grounding_status": "grounded_with_warnings",
+      "answer": "I do not have enough grounded evidence in the indexed filings to answer confidently. The retrieved filings only partially match the topic phrasing in the question and do not answer it directly. [Source 1] [Source 4]",
+      "grounding_status": "insufficient_evidence",
       "used_provider": "extractive",
       "warnings": [
-        "Evidence strength is low; treat the answer as tentative."
+        "Retrieved evidence only partially matches the specific topic phrasing in the question.",
+        "Grounding confidence is below the answerable threshold."
       ],
       "metrics": {
         "retrieval_result_count": 5,
         "top_k_ticker_match": 1.0,
         "expected_section_match": null,
         "expected_form_type_match": null,
-        "keyword_hit_rate": 0.3333333333333333,
-        "citation_coverage": 0.4,
+        "keyword_hit_rate": 0.0,
+        "citation_coverage": 1.0,
         "source_url_coverage": 1.0,
         "answer_non_empty": 1.0,
         "answer_has_citations": 1.0,
-        "weak_evidence_rate": 0.0,
+        "weak_evidence_rate": 1.0,
         "no_answer_handling": 1.0,
-        "latency_ms": 7090.02
+        "latency_ms": 5132.96
       },
-      "keyword_hits": [
-        "reserves"
-      ],
+      "keyword_hits": [],
       "citations": [
         {
           "source_num": 1,
           "ticker": "JPM",
           "company": "JPMORGAN CHASE & CO",
           "form_type": "10-Q",
-          "filing_date": "2023-11-01",
-          "section": "Risk Factors",
-          "accession_number": "0000019617-23-000524",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/19617/000001961723000524/jpm-20230930.htm"
-        },
-        {
-          "source_num": 2,
-          "ticker": "JPM",
-          "company": "JPMORGAN CHASE & CO",
-          "form_type": "10-K",
-          "filing_date": "2023-02-21",
+          "filing_date": "2024-05-01",
           "section": "Notes",
-          "accession_number": "0000019617-23-000231",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/19617/000001961723000231/jpm-20221231.htm"
-        },
-        {
-          "source_num": 3,
-          "ticker": "JPM",
-          "company": "JPMORGAN CHASE & CO",
-          "form_type": "10-Q",
-          "filing_date": "2024-10-30",
-          "section": "Risk Factors",
-          "accession_number": "0000019617-24-000611",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/19617/000001961724000611/jpm-20240930.htm"
+          "accession_number": "0000019617-24-000326",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/19617/000001961724000326/jpm-20240331.htm"
         },
         {
           "source_num": 4,
           "ticker": "JPM",
           "company": "JPMORGAN CHASE & CO",
-          "form_type": "10-Q",
-          "filing_date": "2024-08-02",
-          "section": "Risk Factors",
-          "accession_number": "0000019617-24-000453",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/19617/000001961724000453/jpm-20240630.htm"
-        },
-        {
-          "source_num": 5,
-          "ticker": "JPM",
-          "company": "JPMORGAN CHASE & CO",
-          "form_type": "10-Q",
-          "filing_date": "2024-05-01",
-          "section": "Risk Factors",
-          "accession_number": "0000019617-24-000326",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/19617/000001961724000326/jpm-20240331.htm"
+          "form_type": "10-K",
+          "filing_date": "2024-02-16",
+          "section": "Notes",
+          "accession_number": "0000019617-24-000225",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/19617/000001961724000225/jpm-20231231.htm"
         }
       ],
       "retrieval_doc_ids": [
-        "37ea504c4bbd",
-        "363cdccaf6f5",
-        "617953f70d87",
-        "c69cd70c8238",
-        "dd3c019239df"
+        "6c6735b634b8",
+        "5c8a4936ca70",
+        "92aa02d62ebf",
+        "9b64d86993c2",
+        "e36ac5a4d44b"
       ]
     },
     {
@@ -1789,29 +1458,31 @@
       ],
       "answerable": false,
       "notes": "Weak-evidence / potentially unsupported topic for the current curated chunk set.",
-      "answer": "Based on the retrieved SEC filings:\n- The program does not obligate NVIDIA to acquire any particular amount of common stock and the program may be suspended at any time at our discretion. [Source 1]\n- The repurchases can be made in the open market, in privately negotiated transactions, pursuant to a Rule 10b5-1 trading plan or in structured share repurchase programs, and can be made in one or more larger repurchases, in compliance with Rule 10b-18 of the Exchange Act, subject to market conditions, applicable legal requirements, and other factors. [Source 3]\n- Our cash dividend program and the payment of future cash dividends under that program are subject to our Board of Directors' continuing determination that the dividend program and the declaration of dividends thereunder are in the best interests of our shareholders. [Source 1]\n- Our cash dividend program and the payment of future cash dividends under that program are subject to our Board of Directors' continuing determination that the dividend program and the declaration of dividends thereunder are in the best interests of our sharehold. [Source 4]",
-      "grounding_status": "grounded_with_warnings",
+      "answer": "I do not have enough grounded evidence in the indexed filings to answer confidently. The retrieved filings do not directly discuss Nvidia dividend policy, dividends, or payout policy. [Source 1] [Source 2]",
+      "grounding_status": "insufficient_evidence",
       "used_provider": "extractive",
       "warnings": [
-        "Evidence strength is low; treat the answer as tentative.",
-        "Evidence spans multiple sections; check citations for context."
+        "Retrieved evidence only partially matches the specific topic phrasing in the question.",
+        "Retrieved evidence does not directly support the dividend-policy question.",
+        "Grounding confidence is below the answerable threshold."
       ],
       "metrics": {
         "retrieval_result_count": 5,
         "top_k_ticker_match": 1.0,
         "expected_section_match": null,
         "expected_form_type_match": null,
-        "keyword_hit_rate": 0.5,
-        "citation_coverage": 0.6,
+        "keyword_hit_rate": 1.0,
+        "citation_coverage": 0.5,
         "source_url_coverage": 1.0,
         "answer_non_empty": 1.0,
         "answer_has_citations": 1.0,
-        "weak_evidence_rate": 0.0,
+        "weak_evidence_rate": 1.0,
         "no_answer_handling": 1.0,
-        "latency_ms": 7815.14
+        "latency_ms": 3437.33
       },
       "keyword_hits": [
-        "dividend"
+        "dividend",
+        "policy"
       ],
       "citations": [
         {
@@ -1819,58 +1490,48 @@
           "ticker": "NVDA",
           "company": "NVIDIA CORP",
           "form_type": "10-Q",
-          "filing_date": "2024-05-29",
-          "section": "MD&A",
-          "accession_number": "0001045810-24-000124",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581024000124/nvda-20240428.htm"
+          "filing_date": "2023-08-28",
+          "section": "Risk Factors",
+          "accession_number": "0001045810-23-000175",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581023000175/nvda-20230730.htm"
         },
         {
           "source_num": 2,
           "ticker": "NVDA",
           "company": "NVIDIA CORP",
           "form_type": "10-Q",
-          "filing_date": "2024-08-28",
-          "section": "MD&A",
-          "accession_number": "0001045810-24-000264",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581024000264/nvda-20240728.htm"
-        },
-        {
-          "source_num": 3,
-          "ticker": "NVDA",
-          "company": "NVIDIA CORP",
-          "form_type": "10-K",
-          "filing_date": "2023-02-24",
-          "section": "Financial Statements",
-          "accession_number": "0001045810-23-000017",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581023000017/nvda-20230129.htm"
+          "filing_date": "2024-05-29",
+          "section": "Risk Factors",
+          "accession_number": "0001045810-24-000124",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581024000124/nvda-20240428.htm"
         },
         {
           "source_num": 4,
           "ticker": "NVDA",
           "company": "NVIDIA CORP",
           "form_type": "10-Q",
-          "filing_date": "2023-05-26",
-          "section": "Risk Factors",
-          "accession_number": "0001045810-23-000093",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581023000093/nvda-20230430.htm"
+          "filing_date": "2023-11-21",
+          "section": "MD&A",
+          "accession_number": "0001045810-23-000227",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581023000227/nvda-20231029.htm"
         },
         {
           "source_num": 5,
           "ticker": "NVDA",
           "company": "NVIDIA CORP",
           "form_type": "10-Q",
-          "filing_date": "2023-11-21",
-          "section": "Risk Factors",
-          "accession_number": "0001045810-23-000227",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581023000227/nvda-20231029.htm"
+          "filing_date": "2023-05-26",
+          "section": "MD&A",
+          "accession_number": "0001045810-23-000093",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581023000093/nvda-20230430.htm"
         }
       ],
       "retrieval_doc_ids": [
-        "b8c0489741a6",
-        "fe698b1531b5",
-        "2392d23f27cd",
-        "6cac6875b0f9",
-        "33362101ee5d"
+        "887f9fdb5f60",
+        "5415b0cf28fc",
+        "93588d522e62",
+        "f66a2983f1f9",
+        "850c93656ab2"
       ]
     }
   ]

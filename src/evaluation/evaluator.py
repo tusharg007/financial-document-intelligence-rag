@@ -13,6 +13,13 @@ from src.answering.grounded_answer import GroundedAnswerer, get_grounded_answere
 DEFAULT_EVAL_PATH = PROJECT_ROOT / "data" / "evaluation" / "sec_eval_questions.jsonl"
 DEFAULT_RESULTS_PATH = PROJECT_ROOT / "reports" / "evaluation_results.json"
 DEFAULT_SUMMARY_PATH = PROJECT_ROOT / "reports" / "evaluation_summary.md"
+DEFAULT_COMPARISON_PATH = PROJECT_ROOT / "reports" / "evaluation_comparison.md"
+BASELINE_METRICS = {
+    "keyword_hit_rate": 0.519,
+    "citation_coverage": 0.622,
+    "weak_evidence_rate": 0.833,
+    "source_url_coverage": 1.000,
+}
 
 REQUIRED_CASE_FIELDS = [
     "id",
@@ -60,13 +67,16 @@ def _honest_no_answer(result: Dict[str, Any]) -> bool:
     warnings = " ".join(str(w) for w in result.get("warnings", []))
     warning_text = _normalize_text(warnings)
     return any(
-        marker in answer or marker in warning_text or grounding_status in {"weak_evidence", "no_evidence"}
+        marker in answer or marker in warning_text or grounding_status in {"weak_evidence", "no_evidence", "insufficient_evidence", "no_answer"}
         for marker in [
             "do not have enough grounded evidence",
             "no relevant filing excerpts",
             "evidence strength is low",
             "below the answerable threshold",
             "tentative",
+            "do not directly support",
+            "outside the indexed sec corpus",
+            "do not answer it directly",
         ]
     )
 
@@ -148,7 +158,7 @@ def evaluate_single_question(
         ),
         "answer_non_empty": _bool_score(bool(answer.strip())),
         "answer_has_citations": _bool_score("[Source" in answer),
-        "weak_evidence_rate": _bool_score(str(result.get("grounding_status", "")).lower() in {"weak_evidence", "no_evidence"}),
+        "weak_evidence_rate": _bool_score(str(result.get("grounding_status", "")).lower() in {"weak_evidence", "no_evidence", "insufficient_evidence", "no_answer"}),
         "no_answer_handling": (
             _bool_score(honest_no_answer) if not bool(question_item.get("answerable", True)) else None
         ),
@@ -228,11 +238,14 @@ def write_evaluation_reports(
     evaluation: Dict[str, Any],
     results_path: Path | str = DEFAULT_RESULTS_PATH,
     summary_path: Path | str = DEFAULT_SUMMARY_PATH,
+    comparison_path: Path | str = DEFAULT_COMPARISON_PATH,
 ) -> None:
     results_path = Path(results_path)
     summary_path = Path(summary_path)
+    comparison_path = Path(comparison_path)
     results_path.parent.mkdir(parents=True, exist_ok=True)
     summary_path.parent.mkdir(parents=True, exist_ok=True)
+    comparison_path.parent.mkdir(parents=True, exist_ok=True)
 
     results_path.write_text(json.dumps(evaluation, indent=2, ensure_ascii=False), encoding="utf-8")
     summary = evaluation["summary"]
@@ -268,11 +281,39 @@ def write_evaluation_reports(
         lines.append(f"- `{case['id']}` | `{case['grounding_status']}` | keyword_hit_rate=`{case['metrics']['keyword_hit_rate']:.3f}` | citations=`{len(case['citations'])}`")
     summary_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
+    comparison_lines = [
+        "# Evaluation Comparison",
+        "",
+        "## Baseline",
+        "",
+        f"- old keyword_hit_rate: `{BASELINE_METRICS['keyword_hit_rate']:.3f}`",
+        f"- old citation_coverage: `{BASELINE_METRICS['citation_coverage']:.3f}`",
+        f"- old weak_evidence_rate: `{BASELINE_METRICS['weak_evidence_rate']:.3f}`",
+        f"- old source_url_coverage: `{BASELINE_METRICS['source_url_coverage']:.3f}`",
+        "",
+        "## Current",
+        "",
+        f"- new keyword_hit_rate: `{metrics['keyword_hit_rate']:.3f}`",
+        f"- new citation_coverage: `{metrics['citation_coverage']:.3f}`",
+        f"- new weak_evidence_rate: `{metrics['weak_evidence_rate']:.3f}`",
+        f"- new source_url_coverage: `{metrics['source_url_coverage']:.3f}`",
+        "",
+        "## Delta",
+        "",
+        f"- keyword_hit_rate delta: `{metrics['keyword_hit_rate'] - BASELINE_METRICS['keyword_hit_rate']:+.3f}`",
+        f"- citation_coverage delta: `{metrics['citation_coverage'] - BASELINE_METRICS['citation_coverage']:+.3f}`",
+        f"- weak_evidence_rate delta: `{metrics['weak_evidence_rate'] - BASELINE_METRICS['weak_evidence_rate']:+.3f}`",
+        f"- source_url_coverage delta: `{metrics['source_url_coverage'] - BASELINE_METRICS['source_url_coverage']:+.3f}`",
+        "",
+    ]
+    comparison_path.write_text("\n".join(comparison_lines), encoding="utf-8")
+
 
 def run_evaluation(
     dataset_path: Path | str = DEFAULT_EVAL_PATH,
     results_path: Path | str = DEFAULT_RESULTS_PATH,
     summary_path: Path | str = DEFAULT_SUMMARY_PATH,
+    comparison_path: Path | str = DEFAULT_COMPARISON_PATH,
     top_k: int = 5,
     provider_name: str = "extractive",
     answerer: Optional[GroundedAnswerer] = None,
@@ -296,5 +337,10 @@ def run_evaluation(
         "summary": summarize_cases(cases),
         "cases": cases,
     }
-    write_evaluation_reports(evaluation, results_path=results_path, summary_path=summary_path)
+    write_evaluation_reports(
+        evaluation,
+        results_path=results_path,
+        summary_path=summary_path,
+        comparison_path=comparison_path,
+    )
     return evaluation

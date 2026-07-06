@@ -203,15 +203,7 @@ class SecEdgarIngestor:
             manifest.append({**filing, "local_path": str(out_path)})
         return manifest
 
-    def ingest(self, tickers: Iterable[str], forms: Iterable[str], start_year: int, end_year: int, limit_per_company: int | None = None) -> pd.DataFrame:
-        all_filings: List[Dict[str, Any]] = []
-        for ticker in tickers:
-            ticker_filings = self.list_filings(ticker, forms, start_year, end_year, limit_per_company)
-            logger.info("Found %s filings for %s", len(ticker_filings), ticker)
-            all_filings.extend(ticker_filings)
-        if not all_filings:
-            raise RuntimeError("SEC ingestion returned zero filings for the requested tickers/forms/date range.")
-        manifest = self.download_filings(all_filings)
+    def _parse_and_chunk_manifest(self, manifest: List[Dict[str, Any]]) -> pd.DataFrame:
         df = pd.DataFrame(manifest)
         csv_path = self.processed_dir / "filing_manifest.csv"
         parquet_path = self.processed_dir / "filing_manifest.parquet"
@@ -257,6 +249,36 @@ class SecEdgarIngestor:
         logger.info("Wrote %s chunks to %s and %s", len(chunks), paths["parquet"], paths["jsonl"])
         return df
 
+    def rebuild_from_manifest(self, manifest_path: str | Path | None = None) -> pd.DataFrame:
+        manifest_path = Path(manifest_path or (self.processed_dir / "filing_manifest.csv"))
+        if not manifest_path.exists():
+            raise FileNotFoundError(f"Manifest not found for rebuild: {manifest_path}")
+        if manifest_path.suffix == ".parquet":
+            manifest_df = pd.read_parquet(manifest_path).fillna("")
+        else:
+            manifest_df = pd.read_csv(manifest_path).fillna("")
+        manifest = manifest_df.to_dict(orient="records")
+        missing_local = [
+            row.get("local_path", "")
+            for row in manifest
+            if not row.get("local_path") or not Path(str(row.get("local_path"))).exists()
+        ]
+        if missing_local:
+            raise RuntimeError("Local SEC filing files missing for rebuild:\n" + "\n".join(missing_local[:20]))
+        logger.info("Rebuilding parsed sections and chunks from existing manifest %s", manifest_path)
+        return self._parse_and_chunk_manifest(manifest)
+
+    def ingest(self, tickers: Iterable[str], forms: Iterable[str], start_year: int, end_year: int, limit_per_company: int | None = None) -> pd.DataFrame:
+        all_filings: List[Dict[str, Any]] = []
+        for ticker in tickers:
+            ticker_filings = self.list_filings(ticker, forms, start_year, end_year, limit_per_company)
+            logger.info("Found %s filings for %s", len(ticker_filings), ticker)
+            all_filings.extend(ticker_filings)
+        if not all_filings:
+            raise RuntimeError("SEC ingestion returned zero filings for the requested tickers/forms/date range.")
+        manifest = self.download_filings(all_filings)
+        return self._parse_and_chunk_manifest(manifest)
+
 
 def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -266,8 +288,14 @@ def main() -> None:
     parser.add_argument("--start-year", type=int, required=True)
     parser.add_argument("--end-year", type=int, required=True)
     parser.add_argument("--limit-per-company", type=int, default=None)
+    parser.add_argument("--rebuild-from-manifest", action="store_true")
+    parser.add_argument("--manifest-path", default=str(PROJECT_ROOT / "data" / "processed" / "filing_manifest.csv"))
     args = parser.parse_args()
-    df = SecEdgarIngestor().ingest(args.tickers, args.forms, args.start_year, args.end_year, args.limit_per_company)
+    ingestor = SecEdgarIngestor()
+    if args.rebuild_from_manifest:
+        df = ingestor.rebuild_from_manifest(args.manifest_path)
+    else:
+        df = ingestor.ingest(args.tickers, args.forms, args.start_year, args.end_year, args.limit_per_company)
     chunks_path = PROJECT_ROOT / "data" / "processed" / "chunks.parquet"
     chunk_count = len(pd.read_parquet(chunks_path)) if chunks_path.exists() else 0
     print(f"Wrote {len(df)} filings to data/processed/filing_manifest.csv and .parquet")

@@ -83,6 +83,43 @@ def _no_answer_response():
     }
 
 
+def _insufficient_evidence_response():
+    return {
+        "answer": "I do not have enough grounded evidence in the indexed filings to answer confidently. The retrieved filings discuss related company topics, but they do not directly support the key subject asked in the question. [Source 1]",
+        "citations": [
+            {
+                "source_num": 1,
+                "ticker": "NVDA",
+                "company": "NVIDIA CORP",
+                "form_type": "10-Q",
+                "filing_date": "2024-05-29",
+                "fiscal_year": 2024,
+                "section": "Risk Factors",
+                "accession_number": "0001045810-24-000124",
+                "source_url": "https://www.sec.gov/example-nvda",
+            }
+        ],
+        "retrieval_results": [
+            {
+                "doc_id": "nvda-1",
+                "ticker": "NVDA",
+                "company": "NVIDIA CORP",
+                "form_type": "10-Q",
+                "filing_date": "2024-05-29",
+                "fiscal_year": 2024,
+                "fiscal_period": "Q1",
+                "section": "Risk Factors",
+                "accession_number": "0001045810-24-000124",
+                "source_url": "https://www.sec.gov/example-nvda",
+            }
+        ],
+        "grounding_status": "insufficient_evidence",
+        "used_provider": "extractive",
+        "warnings": ["Retrieved evidence does not directly support the key topic terms in the question."],
+        "latency_ms": 9.0,
+    }
+
+
 def test_evaluate_single_question_metrics():
     from src.evaluation.evaluator import evaluate_single_question
 
@@ -135,6 +172,30 @@ def test_no_answer_handling_metric():
     assert case["metrics"]["no_answer_handling"] == 1.0
     assert case["metrics"]["answer_has_citations"] == 0.0
     assert case["metrics"]["source_url_coverage"] == 0.0
+
+
+def test_no_answer_handling_metric_with_citations_and_insufficient_status():
+    from src.evaluation.evaluator import evaluate_single_question
+
+    question = {
+        "id": "case-3",
+        "question": "What does Nvidia say about dividend policy in these filings?",
+        "filters": {"ticker": "NVDA"},
+        "expected_ticker": "NVDA",
+        "expected_section": "",
+        "expected_form_type": "",
+        "expected_keywords": ["dividend", "policy"],
+        "answerable": False,
+        "notes": "unsupported topic",
+    }
+    answerer = FakeAnswerer({question["question"]: _insufficient_evidence_response()})
+
+    case = evaluate_single_question(question, answerer=answerer, top_k=5, provider_name="extractive")
+
+    assert case["metrics"]["retrieval_result_count"] == 1
+    assert case["metrics"]["no_answer_handling"] == 1.0
+    assert case["metrics"]["answer_has_citations"] == 1.0
+    assert case["metrics"]["source_url_coverage"] == 1.0
 
 
 def test_summarize_cases_aggregates_keyword_and_source_url_coverage():
@@ -227,11 +288,18 @@ def test_report_writing(tmp_path):
     }
     results_path = tmp_path / "evaluation_results.json"
     summary_path = tmp_path / "evaluation_summary.md"
+    comparison_path = tmp_path / "evaluation_comparison.md"
 
-    write_evaluation_reports(evaluation, results_path=results_path, summary_path=summary_path)
+    write_evaluation_reports(
+        evaluation,
+        results_path=results_path,
+        summary_path=summary_path,
+        comparison_path=comparison_path,
+    )
 
     assert results_path.exists()
     assert summary_path.exists()
+    assert comparison_path.exists()
     saved = json.loads(results_path.read_text(encoding="utf-8"))
     assert saved["summary"]["metrics"]["source_url_coverage"] == 1.0
     summary_text = summary_path.read_text(encoding="utf-8")

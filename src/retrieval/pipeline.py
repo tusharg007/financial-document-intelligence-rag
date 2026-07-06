@@ -25,6 +25,13 @@ REQUIRED_METADATA_FIELDS = [
     "source_url",
 ]
 
+QUALITY_METADATA_FIELDS = [
+    "is_toc_like",
+    "boilerplate_score",
+    "content_quality_score",
+    "section_confidence",
+]
+
 
 class RetrievalPipeline:
     """Hybrid retrieval over dense and sparse SEC filing indexes."""
@@ -78,7 +85,72 @@ class RetrievalPipeline:
                 normalized[field] = metadata.get("form_type", metadata.get("filing_type", ""))
             else:
                 normalized[field] = metadata.get(field, "")
+        for field in QUALITY_METADATA_FIELDS:
+            normalized[field] = metadata.get(field, doc.get(field))
         return normalized
+
+    @staticmethod
+    def _safe_float(value: Any, default: float = 0.0) -> float:
+        try:
+            if value in (None, ""):
+                return default
+            return float(value)
+        except Exception:
+            return default
+
+    def _quality_adjustment(
+        self,
+        result: Dict[str, Any],
+        filters: Optional[Dict[str, Any]],
+    ) -> float:
+        quality = 0.0
+        is_toc_like = bool(result.get("is_toc_like"))
+        boilerplate = self._safe_float(result.get("boilerplate_score"))
+        content_quality = self._safe_float(result.get("content_quality_score"))
+        section_confidence = self._safe_float(result.get("section_confidence"))
+
+        if is_toc_like:
+            quality -= 0.03
+        quality -= min(0.035, boilerplate * 0.04)
+        quality += max(0.0, min(0.04, content_quality * 0.05))
+
+        if filters and filters.get("section"):
+            requested_section = str(filters["section"]).strip().lower()
+            result_section = str(result.get("section", "")).strip().lower()
+            if requested_section and requested_section == result_section:
+                quality += min(0.025, section_confidence * 0.03)
+
+        if filters and filters.get("ticker"):
+            requested_ticker = str(filters["ticker"]).strip().upper()
+            if requested_ticker and requested_ticker == str(result.get("ticker", "")).strip().upper():
+                quality += 0.005
+
+        return quality
+
+    def _apply_quality_signals(
+        self,
+        results: List[Dict[str, Any]],
+        filters: Optional[Dict[str, Any]],
+    ) -> List[Dict[str, Any]]:
+        adjusted = []
+        for result in results:
+            enriched = result.copy()
+            quality_adjustment = self._quality_adjustment(enriched, filters)
+            enriched["quality_adjustment"] = quality_adjustment
+            enriched["quality_adjusted_score"] = self._safe_float(enriched.get("fused_score")) + quality_adjustment
+            adjusted.append(enriched)
+
+        adjusted.sort(
+            key=lambda item: (
+                item.get("quality_adjusted_score", 0.0),
+                item.get("fused_score", 0.0),
+                self._safe_float(item.get("content_quality_score")),
+                -self._safe_float(item.get("boilerplate_score")),
+                -1 if item.get("is_toc_like") else 0,
+            ),
+            reverse=True,
+        )
+        return adjusted
 
     def reciprocal_rank_fusion(
         self,
@@ -222,9 +294,17 @@ class RetrievalPipeline:
                 normalized["found_by"] = [source_name]
                 fused.append(normalized)
 
+        fused = self._apply_quality_signals(fused, filters)
+
         rerank_enabled = self.use_reranker if use_reranker is None else use_reranker
         if rerank_enabled and fused:
-            reranked = self.reranker.rerank(query, fused, top_k=min(len(fused), max(top_k, settings.rerank_top_k)))
+            rerank_candidate_k = min(len(fused), max(top_k * 4, settings.rerank_top_k, 12))
+            rerank_candidates = fused[:rerank_candidate_k]
+            reranked = self.reranker.rerank(
+                query,
+                rerank_candidates,
+                top_k=min(len(rerank_candidates), max(top_k, settings.rerank_top_k)),
+            )
             reranked_map = {doc["doc_id"]: doc for doc in reranked}
             final_docs = []
             for doc in fused:
@@ -238,6 +318,7 @@ class RetrievalPipeline:
             final_docs.sort(
                 key=lambda item: (
                     item.get("reranker_score", float("-inf")) if item.get("reranker_score") is not None else float("-inf"),
+                    item.get("quality_adjusted_score", 0.0),
                     item.get("fused_score", 0.0),
                 ),
                 reverse=True,

@@ -8,6 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.evaluation.evaluator import (
+    DEFAULT_COMPARISON_PATH,
     DEFAULT_EVAL_PATH,
     DEFAULT_RESULTS_PATH,
     DEFAULT_SUMMARY_PATH,
@@ -22,6 +23,7 @@ def main() -> None:
     dataset_path = DEFAULT_EVAL_PATH
     results_path = DEFAULT_RESULTS_PATH
     summary_path = DEFAULT_SUMMARY_PATH
+    comparison_path = DEFAULT_COMPARISON_PATH
 
     if not dataset_path.exists():
         failures.append(f"Evaluation dataset is missing: {dataset_path}")
@@ -44,6 +46,8 @@ def main() -> None:
         failures.append(f"Evaluation results file missing: {results_path}")
     if not summary_path.exists():
         failures.append(f"Evaluation summary file missing: {summary_path}")
+    if not comparison_path.exists():
+        failures.append(f"Evaluation comparison file missing: {comparison_path}")
 
     metrics = evaluation.get("summary", {}).get("metrics", {})
     missing_metrics = [metric for metric in [
@@ -80,6 +84,7 @@ def main() -> None:
         "question_count": len(questions),
         "results_exists": results_path.exists(),
         "summary_exists": summary_path.exists(),
+        "comparison_exists": comparison_path.exists(),
         "reported_metrics": sorted(metrics.keys()),
         "no_answer_case_count": len(no_answer_cases),
         "source_url_coverage": metrics.get("source_url_coverage"),
