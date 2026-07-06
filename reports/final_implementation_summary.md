@@ -13,7 +13,59 @@
 - Query retrieval CLI works
 - Retrieval smoke tests pass
 - Grounded answer generation now works with citations
+- SEC evaluation harness now works
 - Tests pass locally
+
+## Evaluation Dataset Design
+
+- Added [data/evaluation/sec_eval_questions.jsonl](F:\financial-document-intelligence-rag-master\financial-document-intelligence-rag-master\data\evaluation\sec_eval_questions.jsonl)
+- Curated question count: `18`
+- Coverage includes:
+  - Apple risk factors
+  - Microsoft revenue
+  - Tesla risk factors
+  - Nvidia business
+  - JPM financial statements
+  - comparison questions
+  - year-specific / temporal questions
+  - honest no-answer / weak-evidence cases
+- Each item includes:
+  - `id`
+  - `question`
+  - `filters`
+  - `expected_ticker`
+  - `expected_section`
+  - `expected_form_type`
+  - `expected_keywords`
+  - `answerable`
+  - `notes`
+
+## Evaluation Harness
+
+- Added [src/evaluation/evaluator.py](F:\financial-document-intelligence-rag-master\financial-document-intelligence-rag-master\src\evaluation\evaluator.py)
+- Added [scripts/run_evaluation.py](F:\financial-document-intelligence-rag-master\financial-document-intelligence-rag-master\scripts\run_evaluation.py)
+- Added [scripts/verify_evaluation.py](F:\financial-document-intelligence-rag-master\financial-document-intelligence-rag-master\scripts\verify_evaluation.py)
+- Generated reports:
+  - [reports/evaluation_results.json](F:\financial-document-intelligence-rag-master\financial-document-intelligence-rag-master\reports\evaluation_results.json)
+  - [reports/evaluation_summary.md](F:\financial-document-intelligence-rag-master\financial-document-intelligence-rag-master\reports\evaluation_summary.md)
+- The evaluator runs the production grounded-answer pipeline in local extractive mode and computes per-case plus aggregate metrics without requiring paid APIs or internet-only providers.
+
+## Evaluation Metrics Implemented
+
+- Retrieval:
+  - `retrieval_result_count`
+  - `top_k_ticker_match`
+  - `expected_section_match`
+  - `expected_form_type_match`
+- Answer quality / grounding:
+  - `keyword_hit_rate`
+  - `citation_coverage`
+  - `source_url_coverage`
+  - `answer_non_empty`
+  - `answer_has_citations`
+  - `weak_evidence_rate`
+  - `no_answer_handling`
+  - `latency_ms`
 
 ## Grounded Answer Design
 
@@ -117,6 +169,15 @@
   - weak-evidence warnings
   - relaxed evidence recovery when strict section filters return mostly TOC/boilerplate chunks
 
+- Expanded [tests/test_evaluation.py](F:\financial-document-intelligence-rag-master\financial-document-intelligence-rag-master\tests\test_evaluation.py)
+- Covered:
+  - metric computation
+  - keyword hit rate
+  - citation coverage
+  - source URL coverage
+  - no-answer handling
+  - report writing
+
 ## Answer Quality Fix
 
 - The grounded answer layer was structurally correct, but the local Apple risk-factor query was still returning boilerplate or chunk-fragment text such as:
@@ -142,6 +203,8 @@
 - `.venv\Scripts\python.exe scripts\verify_indexes.py`
 - `.venv\Scripts\python.exe scripts\verify_retrieval.py`
 - `.venv\Scripts\python.exe scripts\verify_answering.py`
+- `.venv\Scripts\python.exe scripts\run_evaluation.py`
+- `.venv\Scripts\python.exe scripts\verify_evaluation.py`
 - `.venv\Scripts\python.exe scripts\query_answer.py "What are Apple's main risk factors?" --ticker AAPL --section "Risk Factors" --top-k 5`
 - `.venv\Scripts\python.exe -m pytest -q --basetemp=.pytest-tmp`
 
@@ -171,6 +234,35 @@
   - Tesla risk factors: passed
   - Extractive fallback with external keys absent: passed
 
+- `run_evaluation.py`
+  - created `reports/evaluation_results.json`
+  - created `reports/evaluation_summary.md`
+  - question count: `18`
+  - answerable questions: `15`
+  - no-answer questions: `3`
+  - headline metrics:
+    - avg retrieval result count: `5.00`
+    - top-k ticker match: `1.000`
+    - expected section match: `0.667`
+    - expected form-type match: `1.000`
+    - keyword hit rate: `0.519`
+    - citation coverage: `0.622`
+    - source URL coverage: `1.000`
+    - answer non-empty rate: `1.000`
+    - answer citation rate: `1.000`
+    - weak-evidence rate: `0.833`
+    - honest no-answer handling: `1.000`
+    - avg latency (ms): `10958.63`
+
+- `verify_evaluation.py`
+  - passed
+  - evaluation dataset exists: `true`
+  - question count: `18`
+  - results report exists: `true`
+  - summary report exists: `true`
+  - source URL coverage reported: `1.0`
+  - no-answer cases handled honestly: `true`
+
 - `query_answer.py`
   - returned a readable grounded answer instead of boilerplate
   - returned citations with real SEC `source_url` values
@@ -178,11 +270,12 @@
   - used provider: `extractive` in the local no-key environment
 
 - `pytest`
-  - final result: `55 passed`
+  - final result: `59 passed`
 
 ## Notes
 
 - No SEC dataset counts were altered.
 - No citations were faked.
 - No generated indexes or data artifacts were committed.
+- Evaluation reports were kept small enough for git.
 - UI polish, LoRA, evaluation metrics, Docker, deployment, and resume work were not touched in this step.
