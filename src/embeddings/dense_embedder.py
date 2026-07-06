@@ -7,6 +7,9 @@ import os
 import time
 from typing import List, Dict, Any, Optional, Tuple
 from pathlib import Path
+import hashlib
+import math
+import re
 
 from src.utils.logger import get_logger
 from config.settings import settings
@@ -35,6 +38,7 @@ class DenseEmbedder:
         self._model = None
         self._client = None
         self._collection = None
+        self.embedding_backend = "sentence_transformers"
 
     @property
     def model(self):
@@ -48,19 +52,46 @@ class DenseEmbedder:
                 from sentence_transformers import SentenceTransformer
                 self._model = SentenceTransformer(self.model_name)
             except Exception as e:
-                logger.warning(f"Dense embedding model unavailable ({e}); dense retrieval disabled until dependencies are installed.")
+                logger.warning(
+                    "Dense embedding model unavailable (%s); using deterministic "
+                    "stable-hash dense embeddings for local indexing.", e
+                )
+                self.embedding_backend = "stable_hash"
                 self._model = False
                 return None
             elapsed = time.time() - start
             logger.info(f"Model loaded in {elapsed:.2f}s")
         return self._model
 
+    def _stable_hash_embed(self, text: str, dimension: int = 384) -> List[float]:
+        """Create a deterministic dense vector without downloading model weights."""
+        vector = [0.0] * dimension
+        tokens = re.findall(r"\b[\w\-]+\b", (text or "").lower())
+        if not tokens:
+            return vector
+        for token in tokens:
+            digest = hashlib.blake2b(token.encode("utf-8"), digest_size=8).digest()
+            bucket = int.from_bytes(digest[:4], "little") % dimension
+            sign = 1.0 if digest[4] % 2 == 0 else -1.0
+            vector[bucket] += sign
+        norm = math.sqrt(sum(v * v for v in vector))
+        if norm:
+            vector = [v / norm for v in vector]
+        return vector
+
     @property
     def client(self):
         """Lazy-load ChromaDB client."""
         if self._client is None:
-            import chromadb
-            from chromadb.config import Settings as ChromaSettings
+            try:
+                import chromadb
+                from chromadb.config import Settings as ChromaSettings
+            except Exception as e:
+                raise RuntimeError(
+                    "ChromaDB import failed. Install compatible chromadb and "
+                    "OpenTelemetry dependencies. Original error: "
+                    f"{e}"
+                ) from e
             
             Path(self.persist_dir).mkdir(parents=True, exist_ok=True)
             self._client = chromadb.PersistentClient(
@@ -100,7 +131,14 @@ class DenseEmbedder:
         start = time.time()
         model = self.model
         if model is None:
-            return []
+            embeddings = [self._stable_hash_embed(text) for text in texts]
+            elapsed = time.time() - start
+            logger.info(
+                "Embedded %s texts with stable-hash fallback in %.2fs",
+                len(texts),
+                elapsed,
+            )
+            return embeddings
         embeddings = model.encode(
             texts,
             show_progress_bar=len(texts) > 10,
@@ -151,6 +189,11 @@ class DenseEmbedder:
 
             # Generate embeddings
             embeddings = self.embed_texts(texts)
+            if not embeddings or len(embeddings) != len(texts):
+                raise RuntimeError(
+                    f"Embedding generation failed for batch starting at {i}; "
+                    f"expected {len(texts)} vectors, got {len(embeddings)}"
+                )
 
             # Upsert to ChromaDB
             self.collection.upsert(
@@ -227,6 +270,7 @@ class DenseEmbedder:
             "total_documents": count,
             "collection_name": self.collection_name,
             "embedding_model": self.model_name,
+            "embedding_backend": self.embedding_backend,
             "persist_dir": self.persist_dir,
         }
 

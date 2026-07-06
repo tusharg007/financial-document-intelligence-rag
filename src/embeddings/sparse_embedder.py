@@ -4,8 +4,11 @@ Sparse retrieval module using BM25 (Best Matching 25).
 Provides keyword-based retrieval as a complement to dense vector search,
 enabling the hybrid retrieval pipeline.
 """
+import json
+import os
 import pickle
 import time
+from gzip import open as gzip_open
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 
@@ -54,10 +57,22 @@ class SparseEmbedder:
         self.persist_path = persist_path or str(
             Path("data") / "indexes" / "bm25" / "bm25_index.pkl"
         )
+        self.persist_dir = Path(self.persist_path).parent
         self.bm25 = None
         self.documents = []
         self.tokenized_corpus = []
         self._stopwords = None
+        self.format_version = 2
+
+    def _documents_path(self) -> Path:
+        return self.persist_dir / "bm25_documents.jsonl.gz"
+
+    def _tokens_path(self) -> Path:
+        return self.persist_dir / "bm25_tokens.jsonl.gz"
+
+    def _cleanup_persisted_files(self):
+        for path in [Path(self.persist_path), self._documents_path(), self._tokens_path()]:
+            path.unlink(missing_ok=True)
 
     @property
     def stopwords(self):
@@ -221,6 +236,14 @@ class SparseEmbedder:
                 results.append({
                     "doc_id": doc.get("doc_id", f"doc_{idx}"),
                     "content": doc["content"],
+                    "ticker": metadata.get("ticker", ""),
+                    "company": metadata.get("company", ""),
+                    "form_type": metadata.get("form_type", ""),
+                    "filing_date": metadata.get("filing_date", ""),
+                    "fiscal_year": metadata.get("fiscal_year", ""),
+                    "section": metadata.get("section", ""),
+                    "accession_number": metadata.get("accession_number", ""),
+                    "source_url": metadata.get("source_url", ""),
                     "metadata": metadata,
                     "score": final_score,
                     "bm25_score": float(scores[idx]),
@@ -236,19 +259,46 @@ class SparseEmbedder:
         return results
 
     def save_index(self):
-        """Persist BM25 index to disk."""
-        Path(self.persist_path).parent.mkdir(parents=True, exist_ok=True)
-        
-        data = {
-            "bm25": self.bm25,
-            "documents": self.documents,
-            "tokenized_corpus": self.tokenized_corpus,
-        }
-        
-        with open(self.persist_path, "wb") as f:
-            pickle.dump(data, f)
-        
-        logger.info(f"BM25 index saved to {self.persist_path}")
+        """Persist BM25 index to disk using compact sidecar files and atomic writes."""
+        self.persist_dir.mkdir(parents=True, exist_ok=True)
+        manifest_path = Path(self.persist_path)
+        docs_path = self._documents_path()
+        tokens_path = self._tokens_path()
+
+        temp_manifest = manifest_path.with_suffix(".tmp")
+        temp_docs = docs_path.with_suffix(".tmp")
+        temp_tokens = tokens_path.with_suffix(".tmp")
+
+        try:
+            with gzip_open(temp_docs, "wt", encoding="utf-8") as f:
+                for doc in self.documents:
+                    f.write(json.dumps(doc, ensure_ascii=False) + "\n")
+
+            with gzip_open(temp_tokens, "wt", encoding="utf-8") as f:
+                for tokens in self.tokenized_corpus:
+                    f.write(json.dumps(tokens, ensure_ascii=False) + "\n")
+
+            manifest = {
+                "format_version": self.format_version,
+                "document_count": len(self.documents),
+                "documents_file": docs_path.name,
+                "tokens_file": tokens_path.name,
+            }
+            with open(temp_manifest, "wb") as f:
+                pickle.dump(manifest, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+            os.replace(temp_docs, docs_path)
+            os.replace(temp_tokens, tokens_path)
+            os.replace(temp_manifest, manifest_path)
+            logger.info(
+                "BM25 index saved to %s using compact persistence for %s documents",
+                self.persist_dir,
+                len(self.documents),
+            )
+        finally:
+            for temp_path in [temp_manifest, temp_docs, temp_tokens]:
+                if temp_path.exists():
+                    temp_path.unlink(missing_ok=True)
 
     def load_index(self) -> bool:
         """
@@ -264,10 +314,28 @@ class SparseEmbedder:
         try:
             with open(path, "rb") as f:
                 data = pickle.load(f)
-            
-            self.bm25 = data["bm25"]
-            self.documents = data["documents"]
-            self.tokenized_corpus = data["tokenized_corpus"]
+
+            # Backward compatibility for older all-in-one pickle files.
+            if isinstance(data, dict) and {"bm25", "documents", "tokenized_corpus"} <= set(data.keys()):
+                self.bm25 = data["bm25"]
+                self.documents = data["documents"]
+                self.tokenized_corpus = data["tokenized_corpus"]
+            else:
+                docs_path = self.persist_dir / data["documents_file"]
+                tokens_path = self.persist_dir / data["tokens_file"]
+                if not docs_path.exists() or not tokens_path.exists():
+                    raise FileNotFoundError(
+                        f"BM25 sidecar files missing: {docs_path} / {tokens_path}"
+                    )
+                with gzip_open(docs_path, "rt", encoding="utf-8") as f:
+                    self.documents = [
+                        json.loads(line) for line in f if line.strip()
+                    ]
+                with gzip_open(tokens_path, "rt", encoding="utf-8") as f:
+                    self.tokenized_corpus = [
+                        json.loads(line) for line in f if line.strip()
+                    ]
+                self.bm25 = BM25Okapi(self.tokenized_corpus)
             
             logger.info(
                 f"BM25 index loaded: {len(self.documents)} documents"
@@ -275,6 +343,9 @@ class SparseEmbedder:
             return True
         except Exception as e:
             logger.error(f"Failed to load BM25 index: {e}")
+            self.bm25 = None
+            self.documents = []
+            self.tokenized_corpus = []
             return False
 
     def index_exists(self) -> bool:
@@ -287,6 +358,7 @@ class SparseEmbedder:
             "total_documents": len(self.documents),
             "index_built": self.bm25 is not None,
             "persist_path": self.persist_path,
+            "persist_dir": str(self.persist_dir),
             "avg_doc_length": (
                 np.mean([len(t) for t in self.tokenized_corpus])
                 if self.tokenized_corpus else 0

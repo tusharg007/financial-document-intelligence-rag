@@ -121,7 +121,7 @@ class TestSparseEmbedder:
         assert "revenue" in tokens
         assert len(tokens) > 0
 
-    def test_build_and_search(self):
+    def test_build_and_search(self, tmp_path):
         from src.embeddings.sparse_embedder import SparseEmbedder
         from src.data.sample_data import get_all_documents
         from src.data.document_parser import DocumentParser
@@ -129,17 +129,12 @@ class TestSparseEmbedder:
         parser = DocumentParser()
         docs = parser.process_sample_documents(get_all_documents())
         
-        embedder = SparseEmbedder(persist_path="./test_bm25.pkl")
+        embedder = SparseEmbedder(persist_path=str(tmp_path / "test_bm25.pkl"))
         embedder.build_index(docs)
         
         results = embedder.search("Tesla revenue 2023", top_k=5)
         assert len(results) > 0
         assert results[0]["score"] > 0
-        
-        # Cleanup
-        import os
-        if os.path.exists("./test_bm25.pkl"):
-            os.remove("./test_bm25.pkl")
 
     def test_stats(self):
         from src.embeddings.sparse_embedder import SparseEmbedder
